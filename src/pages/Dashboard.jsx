@@ -352,7 +352,23 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
         </div>
 
         {/* Inline add form */}
-    
+        {showForm && (
+          <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"10px 12px"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 100px 80px auto",gap:"6px",marginBottom:"6px"}}>
+              <input placeholder="Name" value={name} autoFocus onChange={e=>setName(e.target.value)} onKeyDown={onKey}
+                style={{...iInput,fontSize:"12px",padding:"6px 8px"}} />
+              <input placeholder="Chime No." value={cnum} onChange={e=>setCnum(e.target.value)}
+                style={{...iInput,fontSize:"12px",padding:"6px 8px"}} />
+              <input type="number" placeholder="$0" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={onKey}
+                style={{...iInput,fontSize:"12px",padding:"6px 8px"}} />
+              <button onClick={handleAdd} disabled={saving}
+                style={{fontSize:"12px",fontWeight:600,padding:"6px 14px",borderRadius:"6px",border:"none",cursor:"pointer",
+                  background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap"}}>
+                {saving?"…":"Save"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
