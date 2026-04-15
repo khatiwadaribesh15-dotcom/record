@@ -555,12 +555,13 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    
     <div style={{minHeight:"100vh",backgroundColor:"#f8fafc"}}>
       <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 20px"}}>
 
         {editRecord && <RecordEditModal record={editRecord} onSave={handleEditRecord} onClose={()=>setEditRecord(null)} />}
         {showRecord  && <SnapshotModal  record={showRecord}                           onClose={()=>setShowRecord(null)} />}
-
+      
         {/* Header */}
         <div style={{marginBottom:"28px"}}>
           <h1 style={{fontSize:"26px",fontWeight:600,color:"#111827",margin:0}}>Kaam</h1>
