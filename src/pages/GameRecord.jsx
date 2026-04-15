@@ -271,7 +271,7 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
       {/* Players */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"10px"}}>
         <p style={{fontSize:"12px",fontWeight:600,color:"#374151",textTransform:"uppercase",letterSpacing:"0.05em",margin:0}}>Games</p>
-        <button onClick={addPlayer} style={{fontSize:"12px",fontWeight:600,padding:"4px 12px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}>+ Add Game Name</button>
+        <button onClick={addPlayer} style={{fontSize:"12px",fontWeight:600,padding:"4px 12px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}> Add Game Name</button>
       </div>
 
       <div style={{overflowX:"auto",marginBottom:"16px"}}>
@@ -296,7 +296,7 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
                     <span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"2px 6px"}}>{p.number}</span>
                   </td>
                   <td style={tdStyle()}>
-                    <input placeholder="Player name" value={p.name} onChange={e=>update(i,"name",e.target.value)}
+                    <input placeholder="Game Name" value={p.name} onChange={e=>update(i,"name",e.target.value)}
                       style={{...iInput,fontSize:"12px",padding:"6px 8px"}} />
                   </td>
                   <td style={tdStyle({textAlign:"right"})}>
@@ -447,7 +447,7 @@ function NewSessionModal({ lastSession, onSave, onClose }) {
               return (
                 <tr key={i} style={{borderBottom:"1px solid #f3f4f6"}}>
                   <td style={tdStyle()}><span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"2px 6px"}}>{p.number}</span></td>
-                  <td style={tdStyle()}><input placeholder="Player name" value={p.name} onChange={e=>update(i,"name",e.target.value)} style={{...iInput,fontSize:"12px",padding:"6px 8px"}} /></td>
+                  <td style={tdStyle()}><input placeholder="Game name" value={p.name} onChange={e=>update(i,"name",e.target.value)} style={{...iInput,fontSize:"12px",padding:"6px 8px"}} /></td>
                   <td style={tdStyle({textAlign:"right"})}><input type="number" placeholder="0" value={p.previous_point} onChange={e=>update(i,"previous_point",e.target.value)} style={{...iInput,fontSize:"12px",padding:"6px 8px",textAlign:"right",width:"80px"}} /></td>
                   <td style={tdStyle({textAlign:"right"})}><input type="number" placeholder="0" value={p.current_point} onChange={e=>update(i,"current_point",e.target.value)} style={{...iInput,fontSize:"12px",padding:"6px 8px",textAlign:"right",width:"80px"}} /></td>
                   <td style={tdStyle({textAlign:"right"})}><input type="number" placeholder="—" value={p.added_point} onChange={e=>update(i,"added_point",e.target.value)} style={{...iInput,fontSize:"12px",padding:"6px 8px",textAlign:"right",width:"80px",color:"#059669"}} /></td>
@@ -548,16 +548,16 @@ export default function GameRecord() {
           <button onClick={()=>setShowNew(true)} style={{fontSize:"13px",fontWeight:600,padding:"10px 22px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7c3aed",color:"#fff"}}
             onMouseEnter={e=>e.currentTarget.style.background="#6d28d9"}
             onMouseLeave={e=>e.currentTarget.style.background="#7c3aed"}>
-            + New Record
+            Add New Record
           </button>
         </div>
 
         {/* Stats */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px",marginBottom:"24px"}}>
           {[
-            {label:"Total sessions",  value:sessions.length,                                                                      color:"#374151",bg:"#fff",    border:"#f0f0f0"},
-            {label:"Total net pts",   value:sessions.reduce((s,g)=>s+num(g.total_net),0),                                         color:"#7c3aed",bg:"#faf5ff", border:"#e9d5ff"},
-            {label:"Avg per session", value:sessions.length?Math.round(sessions.reduce((s,g)=>s+num(g.total_net),0)/sessions.length):0, color:"#1e40af",bg:"#eff6ff",border:"#bfdbfe"},
+            {label:"Total sessions",  value:filtered.length ,color:"#374151",bg:"#fff", border:"#f0f0f0",                                                                      color:"#374151",bg:"#fff",    border:"#f0f0f0"},
+            {label:"Total net pts",   value:filtered.reduce((s,g)=>s+num(g.total_net),0),color:"#7c3aed",bg:"#faf5ff", border:"#e9d5ff"},
+            {label:"Avg per session", value:filtered.length?Math.round(filtered.reduce((s,g)=>s+num(g.total_net),0)/filtered.length):0, color:"#1e40af",bg:"#eff6ff",border:"#bfdbfe"},
           ].map(s=>(
             <div key={s.label} style={{background:s.bg,borderRadius:"12px",padding:"14px 18px",border:`1px solid ${s.border}`}}>
               <p style={{fontSize:"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px",opacity:0.6}}>{s.label}</p>
