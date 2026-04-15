@@ -1,23 +1,5 @@
 {
-    "version": 2,
-    "name": "tracker",
-    "builds": [
-        { "src": "package.json", "use": "@vercel/static-build" },
-        { "src": "api/**/*.js", "use": "@vercel/node" }
-    ],
-    "routes": [
-        { "src": "/api/(.*)", "dest": "/api/$1.js" },
-        { "src": "/(.*)", "dest": "/index.html" }
-    ],
-    "functions": {
-        "api/**/*.js": {
-            "memory": 512,
-            "maxDuration": 10
-        }
-    },
-    "env": {
-        "NODE_ENV": "production"
-    },
-    "cleanUrls": true,
-    "trailingSlash": false
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
