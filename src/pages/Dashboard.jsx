@@ -532,7 +532,7 @@ export default function Dashboard() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:"12px",marginBottom:"12px",alignItems:"end"}}>
             <div>
               <label style={iLabel}>Date</label>
-              <input type="date" value={recDate} onChange={e=>setRecDate(e.target.value)} style={iInput} />
+              <input type="date" value={recDate} onChange={e=>setRecDate(e.target.value)} style={{...iInput,color:"#9ca3af",backgroundColor:"#f3f4f6"}} />
             </div>
             <div>
               <label style={iLabel}>Day</label>
