@@ -355,8 +355,8 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
             ) : sorted.map((r, i) => (
               <tr key={r.id}
                 style={{borderBottom:"1px solid #f9fafb",transition:"background 0.1s"}}
-                onMouseEnter={e => { e.currentTarget.style.background="#f9fafb"; e.currentTarget.querySelector(".ra").style.opacity="1"; }}
-                onMouseLeave={e => { e.currentTarget.style.background="";        e.currentTarget.querySelector(".ra").style.opacity="0"; }}
+                onMouseEnter={e => { e.currentTarget.style.background="#f9fafb"; }}
+                onMouseLeave={e => { e.currentTarget.style.background="";}}
               >
                 <td style={{padding:"10px 10px 10px 14px"}}>
                   <span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"2px 6px"}}>{i+1}</span>
@@ -369,7 +369,7 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
                 <td style={{padding:"10px 14px 10px 10px",textAlign:"right",fontFamily:"monospace",fontSize:"13px",color:amtColor,fontWeight:700}}>{fmt(r.amount)}</td>
                 {/* Actions */}
                 <td style={{padding:"10px 10px 10px 0"}}>
-                  <div className="ra" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"2px",transition:"opacity 0.15s"}}>
+                  <div className="ra" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"2px"}}>
                     <button onClick={()=>setEditEntry(r)}
                       style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#9ca3af",borderRadius:"4px",display:"flex",alignItems:"center"}}
                       onMouseEnter={e=>{e.currentTarget.style.color="#3b82f6";e.currentTarget.style.background="#eff6ff";}}
@@ -696,8 +696,8 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
                   const rowTot = Number(r.chime_total)+Number(r.cashapp_total);
                   return (
                     <tr key={r.id} style={{borderBottom:"1px solid #f0fdf4",transition:"background 0.1s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4";e.currentTarget.querySelector(".ra2").style.opacity="1";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="";e.currentTarget.querySelector(".ra2").style.opacity="0";}}
+                      onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="";}}
                     >
                       <td style={{padding:"10px 12px",fontFamily:"monospace",fontSize:"12px",color:"#4b5563",whiteSpace:"nowrap"}}>{r.date}</td>
                       <td style={{padding:"10px 12px"}}><span className={`text-xs font-medium px-2 py-0.5 rounded-full ${pill}`}>{r.day_name}</span></td>
