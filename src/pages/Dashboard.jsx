@@ -240,7 +240,7 @@ function SnapshotModal({ record, onClose }) {
           {label:"Total",   value:fmt(total),                color:"#111827",bg:"#f9fafb",border:"#e5e7eb"},
         ].map(c=>(
           <div key={c.label} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:"8px",padding:"10px 12px"}}>
-            <p style={{fontSize:"10px",color:c.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 3px",opacity:0.7}}>{c.label}</p>
+            <p style={{fontSize:"10px",color:c.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 3px"}}>{c.label}</p>
             <p style={{fontSize:"16px",fontWeight:700,color:c.color,margin:0,fontFamily:"monospace"}}>{c.value}</p>
           </div>
         ))}
@@ -369,7 +369,7 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
                 <td style={{padding:"10px 14px 10px 10px",textAlign:"right",fontFamily:"monospace",fontSize:"13px",color:amtColor,fontWeight:700}}>{fmt(r.amount)}</td>
                 {/* Actions */}
                 <td style={{padding:"10px 10px 10px 0"}}>
-                  <div className="ra" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"2px",opacity:0,transition:"opacity 0.15s"}}>
+                  <div className="ra" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"2px",transition:"opacity 0.15s"}}>
                     <button onClick={()=>setEditEntry(r)}
                       style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#9ca3af",borderRadius:"4px",display:"flex",alignItems:"center"}}
                       onMouseEnter={e=>{e.currentTarget.style.color="#3b82f6";e.currentTarget.style.background="#eff6ff";}}
@@ -576,7 +576,7 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
             {label:"Cashapp",      value:fmt(cashappTotal),color:"#1e3a8a",bg:"#eff6ff",border:"#bfdbfe"},
           ].map(s=>(
             <div key={s.label} style={{background:s.bg,borderRadius:"12px",padding:"14px 18px",border:`1px solid ${s.border}`}}>
-              <p style={{fontSize:"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px",opacity:0.6}}>{s.label}</p>
+              <p style={{fontSize:"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px"}}>{s.label}</p>
               <p style={{fontSize:"22px",fontWeight:700,fontFamily:"monospace",color:s.color,margin:0}}>{s.value}</p>
             </div>
           ))}
@@ -641,7 +641,7 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
       <div>
         <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>From</label>
         <input type="date" value={filterFrom} onChange={e=>setFilterFrom(e.target.value)}
-          style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#f9fafb",color:"#374151",outline:"none",boxSizing:"border-box"}} />
+          style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#f9fafb",color:"#374151",outline:"none",boxSizing:"border-box",cursor:"pointer",WebkitAppearance:"auto"}} />
       </div>
       <div>
         <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>To</label>
@@ -706,7 +706,7 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
                       <td style={{padding:"10px 12px",textAlign:"right",fontFamily:"monospace",fontSize:"12px",fontWeight:700,color:"#111827"}}>{fmt(rowTot)}</td>
                       <td style={{padding:"10px 12px",fontSize:"12px",color:"#9ca3af",maxWidth:"120px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.note??"—"}</td>
                       <td style={{padding:"10px 8px"}}>
-                        <div className="ra2" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"4px",opacity:0,transition:"opacity 0.15s"}}>
+                        <div className="ra2" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"4px",transition:"opacity 0.15s"}}>
                           <button onClick={()=>setShowRecord(r)}
                             style={{fontSize:"11px",fontWeight:600,padding:"3px 10px",borderRadius:"6px",border:"1px solid #6ee7b7",background:"#f0fdf4",color:"#059669",cursor:"pointer",whiteSpace:"nowrap"}}
                             onMouseEnter={e=>e.currentTarget.style.background="#dcfce7"}

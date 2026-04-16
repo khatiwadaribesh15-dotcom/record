@@ -112,3 +112,10 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+.counter {
+  font-size: 13px;
+  line-height: 130%;
+  padding: 2px 6px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
