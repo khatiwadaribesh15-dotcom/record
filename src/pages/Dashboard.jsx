@@ -94,9 +94,13 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px"}}>
-        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0}}>Edit entry</h2>
-        <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
+        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0,flex:1}}>Edit entry</h2>
+        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
+          <button onClick={onClose} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+          <button onClick={handleSave} disabled={saving||!name.trim()} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#111827",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
+          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+        </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
         <div>
@@ -108,15 +112,11 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
             <label style={iLabel}>Amount ($)</label>
             <input type="number" step="0.01" style={iInput} value={amt} onChange={e=>setAmt(e.target.value)} />
           </div>
+          <div>
+            <label style={iLabel}>{numLabel}</label>
+            <input style={iInput} placeholder="Phone or account number" value={cnum} onChange={e=>setCnum(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
+          </div>
         </div>
-        <div>
-          <label style={iLabel}>{numLabel}</label>
-          <input style={iInput} placeholder="Phone or account number" value={cnum} onChange={e=>setCnum(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
-        </div>
-      </div>
-      <div style={{display:"flex",gap:"8px",marginTop:"20px"}}>
-        <button onClick={onClose} style={{flex:1,fontSize:"13px",padding:"9px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-        <button onClick={handleSave} disabled={saving||!name.trim()} style={{flex:1,fontSize:"13px",padding:"9px",fontWeight:500,borderRadius:"8px",border:"none",background:saving?"#9ca3af":"#111827",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save changes"}</button>
       </div>
     </Modal>
   );
@@ -145,9 +145,14 @@ function RecordEditModal({ record, onSave, onClose }) {
 
   return (
     <Modal onClose={onClose}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px"}}>
-        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0}}>Edit record</h2>
-        <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
+      {/* Top bar: title + Save/Cancel */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
+        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0,flex:1}}>Edit record</h2>
+        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
+          <button onClick={onClose} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+          <button onClick={handleSave} disabled={saving} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#059669",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
+          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+        </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
@@ -164,18 +169,23 @@ function RecordEditModal({ record, onSave, onClose }) {
         </div>
         <div><label style={iLabel}>Note</label><input type="text" placeholder="Optional…" style={iInput} value={note} onChange={e=>setNote(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} /></div>
       </div>
-      <div style={{display:"flex",gap:"8px",marginTop:"20px"}}>
-        <button onClick={onClose} style={{flex:1,fontSize:"13px",padding:"9px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-        <button onClick={handleSave} disabled={saving} style={{flex:1,fontSize:"13px",padding:"9px",fontWeight:500,borderRadius:"8px",border:"none",background:saving?"#9ca3af":"#059669",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save changes"}</button>
-      </div>
     </Modal>
   );
 }
 
 // ─── Snapshot Modal ───────────────────────────────────────────────────────────
-function SnapshotModal({ record, onClose }) {
-  const [snapshots, setSnapshots] = useState([]);
-  const [loading,   setLoading]   = useState(true);
+function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
+  const [snapshots,  setSnapshots]  = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [editSnap,   setEditSnap]   = useState(null);
+  const [deleteSnap, setDeleteSnap] = useState(null);
+
+  async function syncRecordTotals(nextSnaps) {
+    const chime_total   = nextSnaps.filter(s=>s.side==="chime")  .reduce((s,r)=>s+Number(r.amount),0);
+    const cashapp_total = nextSnaps.filter(s=>s.side==="cashapp").reduce((s,r)=>s+Number(r.amount),0);
+    await supabase.from("daily_records").update({ chime_total, cashapp_total }).eq("id", record.id);
+    onRecordUpdate?.(record.id, { chime_total, cashapp_total });
+  }
 
   useEffect(() => {
     async function load() {
@@ -183,15 +193,46 @@ function SnapshotModal({ record, onClose }) {
         .from("daily_snapshots").select("*")
         .eq("record_id", record.id)
         .order("side").order("created_at");
-      setSnapshots(data ?? []);
+      const snaps = data ?? [];
+      setSnapshots(snaps);
       setLoading(false);
+
+      const cT = snaps.filter(s=>s.side==="chime")  .reduce((s,r)=>s+Number(r.amount),0);
+      const aT = snaps.filter(s=>s.side==="cashapp").reduce((s,r)=>s+Number(r.amount),0);
+      if (Number(record.chime_total) !== cT || Number(record.cashapp_total) !== aT) {
+        await syncRecordTotals(snaps);
+      }
     }
     load();
   }, [record.id]);
 
-  const chimeSnaps   = snapshots.filter(s=>s.side==="chime");
-  const cashappSnaps = snapshots.filter(s=>s.side==="cashapp");
-  const total = Number(record.chime_total)+Number(record.cashapp_total);
+  async function handleSaveSnap(id, changes) {
+    await supabase.from("daily_snapshots").update(changes).eq("id", id);
+    const next = snapshots.map(s => s.id === id ? { ...s, ...changes } : s);
+    setSnapshots(next);
+    setEditSnap(null);
+    await syncRecordTotals(next);
+  }
+
+  async function handleDeleteSnap(id) {
+    await supabase.from("daily_snapshots").delete().eq("id", id);
+    const next = snapshots.filter(s => s.id !== id);
+    setSnapshots(next);
+    setDeleteSnap(null);
+    await syncRecordTotals(next);
+  }
+
+  const sortByNumber = (a, b) => {
+    const an = parseFloat(a.chime_number);
+    const bn = parseFloat(b.chime_number);
+    if (!isNaN(an) && !isNaN(bn)) return an - bn;
+    return (a.chime_number||"").localeCompare(b.chime_number||"");
+  };
+  const chimeSnaps   = snapshots.filter(s => s.side === "chime").sort(sortByNumber);
+  const cashappSnaps = snapshots.filter(s => s.side === "cashapp").sort(sortByNumber);
+  const chimeTotal   = chimeSnaps.reduce((s, r) => s + Number(r.amount), 0);
+  const cashappTotal = cashappSnaps.reduce((s, r) => s + Number(r.amount), 0);
+  const total        = chimeTotal + cashappTotal;
 
   const th = { fontSize:"10px",color:"#6b7280",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.04em",padding:"8px 10px",textAlign:"left",borderBottom:"1px solid #f3f4f6",whiteSpace:"nowrap" };
   const td = { fontSize:"12px",color:"#1f2937",padding:"8px 10px",borderBottom:"1px solid #f9fafb" };
@@ -203,41 +244,133 @@ function SnapshotModal({ record, onClose }) {
         <thead><tr>
           <th style={{...th,width:"36px"}}>#</th>
           <th style={th}>Name</th>
-          <th style={{...th,width:"110px"}}>{numLabel}</th>
-          <th style={{...th,textAlign:"right",width:"90px"}}>Amount</th>
+          <th style={{...th,width:"100px"}}>{numLabel}</th>
+          <th style={{...th,textAlign:"right",width:"80px"}}>Amount</th>
+          <th style={{...th,width:"120px"}} />
         </tr></thead>
         <tbody>
-          {items.map((s,i)=>(
-            <tr key={s.id}>
+          {items.map((s, i) => (
+            <tr key={s.id} style={{borderBottom:"1px solid #f9fafb"}}>
               <td style={td}><span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",borderRadius:"4px",padding:"1px 5px",fontFamily:"monospace"}}>{i+1}</span></td>
               <td style={td}>{s.name}</td>
               <td style={{...td,fontFamily:"monospace",fontSize:"11px",color:"#4b5563"}}>{s.chime_number||"—"}</td>
               <td style={{...td,textAlign:"right",fontFamily:"monospace",fontWeight:600,color}}>{fmt(s.amount)}</td>
+              <td style={{...td,textAlign:"right"}}>
+                <div style={{display:"flex",gap:"4px",justifyContent:"flex-end"}}>
+                  <button onClick={()=>setEditSnap(s)}
+                    style={{fontSize:"11px",fontWeight:500,padding:"3px 9px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}>
+                    Edit
+                  </button>
+                  <button onClick={()=>setDeleteSnap(s)}
+                    style={{fontSize:"11px",fontWeight:500,padding:"3px 9px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}>
+                    Delete
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
           <tr>
-            <td colSpan={4} style={{...td,color:"#9ca3af",borderTop:"1px solid #e5e7eb"}}>Total</td>
+            <td colSpan={3} style={{...td,color:"#9ca3af",borderTop:"1px solid #e5e7eb",fontSize:"11px"}}>Total</td>
             <td style={{...td,textAlign:"right",fontFamily:"monospace",fontWeight:700,color,borderTop:"1px solid #e5e7eb"}}>{fmt(items.reduce((s,r)=>s+Number(r.amount),0))}</td>
+            <td style={{borderTop:"1px solid #e5e7eb"}} />
           </tr>
         </tbody>
       </table>
     );
   }
 
+  // ── Edit snap entry modal ──────────────────────────────────────────────────
+  function SnapEditModal({ snap, numLabel, onClose: closeEdit }) {
+    const [name,   setName]   = useState(snap.name          ?? "");
+    const [amt,    setAmt]    = useState(snap.amount         ?? "");
+    const [cnum,   setCnum]   = useState(snap.chime_number  ?? "");
+    const [saving, setSaving] = useState(false);
+
+    async function save() {
+      if (!name.trim()) return;
+      setSaving(true);
+      await handleSaveSnap(snap.id, { name: name.trim(), amount: parseFloat(amt)||0, chime_number: cnum.trim()||null });
+      setSaving(false);
+    }
+
+    return createPortal(
+      <div onClick={e=>e.target===e.currentTarget&&closeEdit()} style={{position:"fixed",inset:0,zIndex:10000,backgroundColor:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+        <div style={{backgroundColor:"#fff",borderRadius:"16px",width:"100%",maxWidth:"380px",padding:"24px",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
+            <h2 style={{fontSize:"15px",fontWeight:700,color:"#111827",margin:0,flex:1}}>Edit entry</h2>
+            <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
+              <button onClick={closeEdit} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+              <button onClick={save} disabled={saving||!name.trim()} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#111827",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
+              <button onClick={closeEdit} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+            </div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <div>
+              <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>Name</label>
+              <input autoFocus value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+              <div>
+                <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>Amount ($)</label>
+                <input type="number" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+              </div>
+              <div>
+                <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>{numLabel}</label>
+                <input value={cnum} onChange={e=>setCnum(e.target.value)} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // ── Delete snap confirm modal ──────────────────────────────────────────────
+  function SnapDeleteModal({ snap, onClose: closeDelete }) {
+    const [deleting, setDeleting] = useState(false);
+    async function confirm() {
+      setDeleting(true);
+      await handleDeleteSnap(snap.id);
+      setDeleting(false);
+    }
+    return createPortal(
+      <div onClick={e=>e.target===e.currentTarget&&closeDelete()} style={{position:"fixed",inset:0,zIndex:10000,backgroundColor:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+        <div style={{backgroundColor:"#fff",borderRadius:"16px",width:"100%",maxWidth:"340px",padding:"24px",boxShadow:"0 20px 60px rgba(0,0,0,0.25)",textAlign:"center"}}>
+          <div style={{fontSize:"36px",marginBottom:"12px"}}>🗑️</div>
+          <h2 style={{fontSize:"15px",fontWeight:700,color:"#111827",margin:"0 0 8px"}}>Delete entry?</h2>
+          <p style={{fontSize:"13px",color:"#6b7280",margin:"0 0 24px",lineHeight:1.5}}>{snap.name} · {fmt(snap.amount)}<br/>This cannot be undone.</p>
+          <div style={{display:"flex",gap:"8px"}}>
+            <button onClick={closeDelete} style={{flex:1,fontSize:"13px",padding:"9px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+            <button onClick={confirm} disabled={deleting} style={{flex:1,fontSize:"13px",padding:"9px",fontWeight:600,borderRadius:"8px",border:"none",background:deleting?"#9ca3af":"#ef4444",color:"#fff",cursor:deleting?"not-allowed":"pointer"}}>{deleting?"Deleting…":"Delete"}</button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
   return (
-    <Modal onClose={onClose} maxWidth="580px">
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px"}}>
-        <div>
+    <Modal onClose={onClose} maxWidth="620px">
+      {editSnap   && <SnapEditModal   snap={editSnap}   numLabel={editSnap.side==="chime"?"Chime No.":"Cashapp No."} onClose={()=>setEditSnap(null)}   />}
+      {deleteSnap && <SnapDeleteModal snap={deleteSnap}                                                             onClose={()=>setDeleteSnap(null)} />}
+
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px",gap:"8px"}}>
+        <div style={{flex:1}}>
           <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0}}>{record.date}</h2>
           <p style={{fontSize:"12px",color:"#9ca3af",margin:"2px 0 0"}}>{record.day_name}{record.note?` · ${record.note}`:""}</p>
         </div>
-        <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
+        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
+          <button onClick={()=>onEdit(record)} style={{fontSize:"12px",fontWeight:600,padding:"5px 14px",borderRadius:"7px",border:"1px solid #d1fae5",background:"#f0fdf4",color:"#059669",cursor:"pointer"}}>Edit</button>
+          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
+        </div>
       </div>
+
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px",marginBottom:"20px"}}>
         {[
-          {label:"Chime",   value:fmt(record.chime_total),   color:"#065f46",bg:"#f0fdf4",border:"#bbf7d0"},
-          {label:"Cashapp", value:fmt(record.cashapp_total), color:"#1e3a8a",bg:"#eff6ff",border:"#bfdbfe"},
-          {label:"Total",   value:fmt(total),                color:"#111827",bg:"#f9fafb",border:"#e5e7eb"},
+          {label:"Chime",   value:fmt(chimeTotal),   color:"#065f46",bg:"#f0fdf4",border:"#bbf7d0"},
+          {label:"Cashapp", value:fmt(cashappTotal), color:"#1e3a8a",bg:"#eff6ff",border:"#bfdbfe"},
+          {label:"Total",   value:fmt(total),        color:"#111827",bg:"#f9fafb",border:"#e5e7eb"},
         ].map(c=>(
           <div key={c.label} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:"8px",padding:"10px 12px"}}>
             <p style={{fontSize:"10px",color:c.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 3px"}}>{c.label}</p>
@@ -245,6 +378,7 @@ function SnapshotModal({ record, onClose }) {
           </div>
         ))}
       </div>
+
       {loading ? (
         <p style={{textAlign:"center",fontSize:"13px",color:"#9ca3af",padding:"20px 0"}}>Loading…</p>
       ) : (
@@ -368,20 +502,20 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
                 {/* Amount */}
                 <td style={{padding:"10px 14px 10px 10px",textAlign:"right",fontFamily:"monospace",fontSize:"13px",color:amtColor,fontWeight:700}}>{fmt(r.amount)}</td>
                 {/* Actions */}
-                <td style={{padding:"10px 10px 10px 0"}}>
-                  <div className="ra" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"2px"}}>
+                <td style={{padding:"8px 10px 8px 0"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"4px"}}>
                     <button onClick={()=>setEditEntry(r)}
-                      style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#9ca3af",borderRadius:"4px",display:"flex",alignItems:"center"}}
-                      onMouseEnter={e=>{e.currentTarget.style.color="#3b82f6";e.currentTarget.style.background="#eff6ff";}}
-                      onMouseLeave={e=>{e.currentTarget.style.color="#9ca3af";e.currentTarget.style.background="none";}}>
-                      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 0110 16H8v-2a2 2 0 01.586-1.414z"/>
-                      </svg>
+                      style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}
+                      onMouseEnter={e=>{e.currentTarget.style.background="#eff6ff";e.currentTarget.style.borderColor="#bfdbfe";e.currentTarget.style.color="#2563eb";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="#f9fafb";e.currentTarget.style.borderColor="#e5e7eb";e.currentTarget.style.color="#374151";}}>
+                      Edit
                     </button>
                     <button onClick={()=>onHide(r.id)}
-                      style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#d1d5db",borderRadius:"4px",fontSize:"15px",lineHeight:1}}
-                      onMouseEnter={e=>{e.currentTarget.style.color="#f87171";e.currentTarget.style.background="#fef2f2";}}
-                      onMouseLeave={e=>{e.currentTarget.style.color="#d1d5db";e.currentTarget.style.background="none";}}>×</button>
+                      style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}
+                      onMouseEnter={e=>{e.currentTarget.style.background="#fee2e2";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="#fff1f2";}}>
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -557,10 +691,10 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
   return (
     
     <div style={{minHeight:"100vh",backgroundColor:"#f8fafc"}}>
-      <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 20px"}}>
+      <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 20px 80px"}}>
 
         {editRecord && <RecordEditModal record={editRecord} onSave={handleEditRecord} onClose={()=>setEditRecord(null)} />}
-        {showRecord  && <SnapshotModal  record={showRecord}                           onClose={()=>setShowRecord(null)} />}
+        {showRecord  && <SnapshotModal  record={showRecord} onEdit={r=>{setShowRecord(null);setEditRecord(r);}} onRecordUpdate={(id,changes)=>setRecords(prev=>prev.map(r=>r.id===id?{...r,...changes}:r))} onClose={()=>setShowRecord(null)} />}
       
         {/* Header */}
         <div style={{marginBottom:"28px"}}>

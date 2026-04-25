@@ -532,7 +532,7 @@ export default function GameRecord() {
 
   return (
     <div style={{minHeight:"100vh",backgroundColor:"#f8fafc"}}>
-      <div style={{maxWidth:"900px",margin:"0 auto",padding:"40px 20px"}}>
+      <div style={{maxWidth:"900px",margin:"0 auto",padding:"40px 20px 80px"}}>
 
         {showNew      && <NewSessionModal    lastSession={lastSession} onSave={()=>{ setSessions([]); fetchAll(); }} onClose={()=>setShowNew(false)} />}
         {showDetail   && <SessionDetailModal session={showDetail}      onClose={()=>setShowDetail(null)} />}

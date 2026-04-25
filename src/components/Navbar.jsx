@@ -5,8 +5,9 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const links = [
-    { path: "/",      label: "Payment Records" },
-    { path: "/game",  label: "Game Records" },
+    { path: "/",        label: "Payment Records" },
+    { path: "/game",    label: "Game Records"    },
+    { path: "/shifts",  label: "Shifts"          },
   ];
 
   return (
@@ -36,10 +37,11 @@ export default function Navbar() {
         <div style={{ display: "flex", gap: "6px" }}>
           {links.map(link => {
             const active = location.pathname === link.path;
-            const isGame = link.path === "/game";
-            const activeColor  = isGame ? "#7c3aed" : "#059669";
-            const activeBg     = isGame ? "#f5f3ff" : "#f0fdf4";
-            const activeBorder = isGame ? "#e9d5ff" : "#bbf7d0";
+            const isGame   = link.path === "/game";
+            const isShifts = link.path === "/shifts";
+            const activeColor  = isGame ? "#7c3aed" : isShifts ? "#d97706" : "#059669";
+            const activeBg     = isGame ? "#f5f3ff" : isShifts ? "#fffbeb" : "#f0fdf4";
+            const activeBorder = isGame ? "#e9d5ff" : isShifts ? "#fde68a" : "#bbf7d0";
 
             return (
               <button
