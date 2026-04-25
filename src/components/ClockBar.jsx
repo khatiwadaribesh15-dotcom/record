@@ -21,9 +21,21 @@ export default function ClockBar() {
   const [loading,     setLoading]     = useState(true);
   const [saving,      setSaving]      = useState(false);
   const [name,        setName]        = useState("");
+  const [offsetMs,    setOffsetMs]    = useState(0);
+
+  async function syncServerOffset() {
+    const t0 = Date.now();
+    const { data } = await supabase.rpc("server_now");
+    const t1 = Date.now();
+    if (data) {
+      const serverMs = new Date(data).getTime();
+      setOffsetMs(serverMs - (t0 + t1) / 2);
+    }
+  }
 
   useEffect(() => {
     async function load() {
+      await syncServerOffset();
       const { data } = await supabase
         .from("shifts")
         .select("*")
@@ -39,18 +51,20 @@ export default function ClockBar() {
   useEffect(() => {
     if (!activeShift) { setElapsed(0); return; }
     function tick() {
-      setElapsed(Math.floor((Date.now() - new Date(activeShift.clock_in).getTime()) / 1000));
+      const serverNow = Date.now() + offsetMs;
+      setElapsed(Math.max(0, Math.floor((serverNow - new Date(activeShift.clock_in).getTime()) / 1000)));
     }
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [activeShift]);
+  }, [activeShift, offsetMs]);
 
   async function clockIn() {
     setSaving(true);
+    await syncServerOffset();
     const { data } = await supabase
       .from("shifts")
-      .insert({ clock_in: new Date().toISOString(), name: name.trim() || null })
+      .insert({ name: name.trim() || null })
       .select()
       .single();
     setActiveShift(data);
@@ -61,11 +75,9 @@ export default function ClockBar() {
   async function clockOut() {
     if (!activeShift) return;
     setSaving(true);
-    const now = new Date();
-    const durationMinutes = Math.floor((now - new Date(activeShift.clock_in)) / 60000);
     await supabase
       .from("shifts")
-      .update({ clock_out: now.toISOString(), duration_minutes: durationMinutes })
+      .update({ clock_out: new Date().toISOString() })
       .eq("id", activeShift.id);
     setActiveShift(null);
     setSaving(false);
