@@ -161,6 +161,21 @@ export default function Shifts() {
       setLoading(false);
     }
     load();
+
+    const channel = supabase
+      .channel("shifts-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shifts" }, payload => {
+        if (payload.eventType === "INSERT") {
+          setShifts(prev => [payload.new, ...prev.filter(s => s.id !== payload.new.id)]);
+        } else if (payload.eventType === "UPDATE") {
+          setShifts(prev => prev.map(s => s.id === payload.new.id ? payload.new : s));
+        } else if (payload.eventType === "DELETE") {
+          setShifts(prev => prev.filter(s => s.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   async function handleSaveName(id, name) {
@@ -235,8 +250,16 @@ export default function Shifts() {
                         Edit
                       </button>
                       <button
-                        onClick={() => setDeleteShift(s)}
-                        style={{ fontSize: "11px", fontWeight: 500, padding: "4px 10px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer" }}
+                        onClick={() => s.clock_out && setDeleteShift(s)}
+                        disabled={!s.clock_out}
+                        title={!s.clock_out ? "Clock out before deleting" : ""}
+                        style={{
+                          fontSize: "11px", fontWeight: 500, padding: "4px 10px", borderRadius: "6px",
+                          border: `1px solid ${s.clock_out ? "#fecaca" : "#e5e7eb"}`,
+                          background:  s.clock_out ? "#fff1f2" : "#f9fafb",
+                          color:       s.clock_out ? "#ef4444" : "#d1d5db",
+                          cursor:      s.clock_out ? "pointer" : "not-allowed",
+                        }}
                       >
                         Delete
                       </button>
