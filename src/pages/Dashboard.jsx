@@ -566,6 +566,158 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
   );
 }
 
+// ─── Status Table ─────────────────────────────────────────────────────────────
+function StatusTable() {
+  const [items,    setItems]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [name,     setName]     = useState("");
+  const [num,      setNum]      = useState("");
+  const [side,     setSide]     = useState("chime");
+  const [saving,   setSaving]   = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from("status_entries").select("*").order("created_at",{ascending:true});
+      setItems(data ?? []);
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  async function handleAdd() {
+    if (!name.trim()) return;
+    setSaving(true);
+    const { data } = await supabase.from("status_entries")
+      .insert({ name:name.trim(), side, st_number:num.trim()||null, st_using:false, st_paying:false, st_done:false })
+      .select();
+    if (data) setItems(prev => [...prev, data[0]]);
+    setName(""); setNum(""); setSide("chime"); setShowForm(false); setSaving(false);
+  }
+
+  async function toggle(id, key) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const newVal = !item[key];
+    const changes = { [key]: newVal };
+    if (key === "st_done" && newVal) { changes.st_using = false; changes.st_paying = false; }
+    setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i));
+    await supabase.from("status_entries").update(changes).eq("id", id);
+  }
+
+  async function handleDelete(id) {
+    await supabase.from("status_entries").delete().eq("id", id);
+    setItems(prev => prev.filter(i => i.id !== id));
+  }
+
+  const sideColor = s => s === "chime" ? "#10b981" : "#3b82f6";
+  const sidePill  = s => s === "chime"
+    ? { bg:"#f0fdf4", color:"#065f46", border:"#bbf7d0" }
+    : { bg:"#eff6ff", color:"#1e3a8a", border:"#bfdbfe" };
+
+  const th = { fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 10px" };
+
+  return (
+    <div style={{background:"#fff",border:"1px solid #f0f0f0",borderRadius:"14px",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:"28px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",borderBottom:"1px solid #f3f4f6"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+          <span style={{fontSize:"14px",fontWeight:600,color:"#111827"}}>Status</span>
+          <span style={{fontSize:"11px",color:"#9ca3af"}}>{items.length} record{items.length===1?"":"s"}</span>
+        </div>
+        <button onClick={()=>setShowForm(v=>!v)} style={{
+          fontSize:"13px",fontWeight:600,padding:"6px 18px",borderRadius:"8px",border:"none",cursor:"pointer",color:"#fff",
+          background: showForm ? "#6b7280" : "#111827",
+        }}>{showForm ? "Cancel" : "+ Add"}</button>
+      </div>
+
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
+        <thead>
+          <tr style={{borderBottom:"1px solid #f3f4f6",background:"#fafafa"}}>
+            <th style={{...th,textAlign:"left",paddingLeft:"14px"}}>Name</th>
+            <th style={{...th,textAlign:"left",width:"100px"}}>Number</th>
+            <th style={{...th,textAlign:"left",width:"100px"}}>Type</th>
+            <th style={{...th,textAlign:"center",width:"80px"}}>Using</th>
+            <th style={{...th,textAlign:"center",width:"80px"}}>Paying</th>
+            <th style={{...th,textAlign:"center",width:"80px"}}>Done</th>
+            <th style={{width:"60px"}} />
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>Loading…</td></tr>
+          ) : items.length === 0 ? (
+            <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>No records yet</td></tr>
+          ) : items.map(r => {
+            const pill = sidePill(r.side);
+            return (
+              <tr key={r.id} style={{borderBottom:"1px solid #f9fafb"}}>
+                <td style={{padding:"10px 14px",textAlign:"left",color:"#1f2937",fontWeight:500}}>{r.name}</td>
+                <td style={{padding:"10px",textAlign:"left",fontFamily:"monospace",fontSize:"12px",color:"#374151"}}>
+                  {r.st_number || <span style={{color:"#e5e7eb"}}>—</span>}
+                </td>
+                <td style={{padding:"10px",textAlign:"left"}}>
+                  <span style={{fontSize:"11px",fontWeight:600,padding:"2px 8px",borderRadius:"6px",background:pill.bg,color:pill.color,border:`1px solid ${pill.border}`,textTransform:"capitalize"}}>{r.side}</span>
+                </td>
+                {["st_using","st_paying","st_done"].map(k => (
+                  <td key={k} style={{padding:"10px",textAlign:"center"}}>
+                    <input type="checkbox" checked={r[k]} onChange={()=>toggle(r.id,k)}
+                      style={{cursor:"pointer",accentColor:sideColor(r.side),width:"15px",height:"15px"}} />
+                  </td>
+                ))}
+                <td style={{padding:"10px"}}>
+                  <button onClick={()=>handleDelete(r.id)}
+                    style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {showForm && (
+        <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 130px 200px auto",gap:"8px",alignItems:"end"}}>
+            <div>
+              <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
+              <input placeholder="Account name" autoFocus value={name} onChange={e=>setName(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleAdd()}
+                style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+            </div>
+            <div>
+              <label style={{...iLabel,marginBottom:"3px"}}>Number</label>
+              <input placeholder="Number" value={num} onChange={e=>setNum(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleAdd()}
+                style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+            </div>
+            <div>
+              <label style={{...iLabel,marginBottom:"3px"}}>Type</label>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px"}}>
+                <button onClick={()=>setSide("chime")}
+                  style={{fontSize:"12px",fontWeight:600,padding:"7px",borderRadius:"6px",cursor:"pointer",
+                    border:`1px solid ${side==="chime"?"#059669":"#e5e7eb"}`,
+                    background:side==="chime"?"#f0fdf4":"#fff",
+                    color:side==="chime"?"#059669":"#6b7280"}}>Chime</button>
+                <button onClick={()=>setSide("cashapp")}
+                  style={{fontSize:"12px",fontWeight:600,padding:"7px",borderRadius:"6px",cursor:"pointer",
+                    border:`1px solid ${side==="cashapp"?"#2563eb":"#e5e7eb"}`,
+                    background:side==="cashapp"?"#eff6ff":"#fff",
+                    color:side==="cashapp"?"#2563eb":"#6b7280"}}>Cashapp</button>
+              </div>
+            </div>
+            <button onClick={handleAdd} disabled={saving||!name.trim()}
+              style={{fontSize:"13px",fontWeight:600,padding:"7px 16px",borderRadius:"7px",border:"none",cursor:saving||!name.trim()?"not-allowed":"pointer",
+                background:saving||!name.trim()?"#9ca3af":"#111827",color:"#fff",whiteSpace:"nowrap"}}>
+              {saving ? "…" : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [entries,        setEntries]        = useState({ chime:[], cashapp:[] });
@@ -717,12 +869,14 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
         </div>
 
         {/* Entry tables */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px",marginBottom:"28px"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"16px",marginBottom:"28px"}}>
           <EntryTable side="chime"   entries={entries.chime}   onAdd={handleAddEntry} onHide={handleHideEntry} onEdit={handleEditEntry} loading={loadingEntries} />
           <EntryTable side="cashapp" entries={entries.cashapp} onAdd={handleAddEntry} onHide={handleHideEntry} onEdit={handleEditEntry} loading={loadingEntries} />
         </div>
 
         <div style={{borderTop:"1px solid #f3f4f6",marginBottom:"28px"}} />
+
+        <StatusTable />
 
         {/* Save record */}
         <p style={{fontSize:"14px",fontWeight:600,color:"#374151",marginBottom:"12px"}}>Save today's record</p>
