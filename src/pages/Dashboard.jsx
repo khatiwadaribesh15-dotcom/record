@@ -575,6 +575,15 @@ function StatusTable() {
   const [num,      setNum]      = useState("");
   const [side,     setSide]     = useState("chime");
   const [saving,   setSaving]   = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -683,18 +692,18 @@ function StatusTable() {
 
       {showForm && (
         <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 130px 200px auto",gap:"8px",alignItems:"end"}}>
+          <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 130px 200px auto",gap:"10px",alignItems:"end"}}>
             <div>
               <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
               <input placeholder="Account name" autoFocus value={name} onChange={e=>setName(e.target.value)}
                 onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-                style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+                style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
             </div>
             <div>
               <label style={{...iLabel,marginBottom:"3px"}}>Number</label>
               <input placeholder="Number" value={num} onChange={e=>setNum(e.target.value)}
                 onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-                style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+                style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
             </div>
             <div>
               <label style={{...iLabel,marginBottom:"3px"}}>Type</label>
