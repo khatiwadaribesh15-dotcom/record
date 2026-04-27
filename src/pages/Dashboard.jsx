@@ -647,7 +647,12 @@ function StatusTable() {
             <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>Loading…</td></tr>
           ) : items.length === 0 ? (
             <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>No records yet</td></tr>
-          ) : items.map(r => {
+          ) : [...items].sort((a,b)=>{
+            const an = parseFloat(a.st_number);
+            const bn = parseFloat(b.st_number);
+            if (!isNaN(an) && !isNaN(bn)) return an - bn;
+            return (a.st_number||"").localeCompare(b.st_number||"");
+          }).map(r => {
             const pill = sidePill(r.side);
             return (
               <tr key={r.id} style={{borderBottom:"1px solid #f9fafb"}}>
