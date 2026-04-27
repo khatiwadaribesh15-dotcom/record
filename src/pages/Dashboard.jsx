@@ -471,18 +471,20 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
             <span style={{width:"9px",height:"9px",borderRadius:"50%",backgroundColor:dot,display:"inline-block"}} />
             <span style={{fontSize:"14px",fontWeight:600,color:"#111827"}}>{label}</span>
           </div>
-          <button
-            onMouseEnter={()=>setAddHov(true)} onMouseLeave={()=>setAddHov(false)}
-            onClick={()=>setShowForm(v=>!v)}
-            style={{
-              fontSize:"13px",fontWeight:600,padding:"6px 18px",
-              borderRadius:"8px",border:"none",cursor:"pointer",color:"#fff",
-              background: showForm ? "#6b7280" : (addHov ? addHovBg : addBg),
-              transition:"background 0.15s",
-            }}
-          >
-            {showForm ? "Cancel" : "+ Add"}
-          </button>
+          {!showForm && (
+            <button
+              onMouseEnter={()=>setAddHov(true)} onMouseLeave={()=>setAddHov(false)}
+              onClick={()=>setShowForm(true)}
+              style={{
+                fontSize:"13px",fontWeight:600,padding:"6px 18px",
+                borderRadius:"8px",border:"none",cursor:"pointer",color:"#fff",
+                background: addHov ? addHovBg : addBg,
+                transition:"background 0.15s",
+              }}
+            >
+              + Add
+            </button>
+          )}
         </div>
 
         {/* Table — no tableLayout:fixed so columns size naturally */}
@@ -550,7 +552,7 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
         {/* Add form */}
         {showForm && (
           <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
-            <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 80px 110px 80px auto",gap:"10px",alignItems:isMobile?"stretch":"center"}}>
+            <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 100px 100px auto",gap:"10px",alignItems:isMobile?"stretch":"center"}}>
               <div>
                 <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
                 <input placeholder="Full name" value={name} autoFocus onChange={e=>setName(e.target.value)} onKeyDown={onKey}
@@ -566,10 +568,14 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
                 <input type="number" placeholder="$0" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={onKey}
                   style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
               </div>
-              <div style={{paddingTop:isMobile?"0":"18px"}}>
+              <div style={{paddingTop:isMobile?"0":"18px",display:"flex",gap:"8px"}}>
+                <button onClick={()=>{setShowForm(false);setName("");setAmt("");setCnum("");}}
+                  style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"1px solid #e5e7eb",background:"#fff",color:"#6b7280",cursor:"pointer",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+                  Cancel
+                </button>
                 <button onClick={handleAdd} disabled={saving}
                   style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"none",cursor:"pointer",
-                    background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap",width:isMobile?"100%":"auto"}}>
+                    background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
                   {saving ? "…" : "Save"}
                 </button>
               </div>
@@ -727,11 +733,17 @@ function StatusTable() {
                     color:side==="cashapp"?"#2563eb":"#6b7280"}}>Cashapp</button>
               </div>
             </div>
-            <button onClick={handleAdd} disabled={saving||!name.trim()}
-              style={{fontSize:"13px",fontWeight:600,padding:"7px 16px",borderRadius:"7px",border:"none",cursor:saving||!name.trim()?"not-allowed":"pointer",
-                background:saving||!name.trim()?"#9ca3af":"#111827",color:"#fff",whiteSpace:"nowrap"}}>
-              {saving ? "…" : "Save"}
-            </button>
+            <div style={{display:"flex",gap:"8px",paddingTop:isMobile?"0":"0"}}>
+              <button onClick={()=>{setShowForm(false);setName("");setNum("");setSide("chime");}}
+                style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"1px solid #e5e7eb",background:"#fff",color:"#6b7280",cursor:"pointer",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+                Cancel
+              </button>
+              <button onClick={handleAdd} disabled={saving||!name.trim()}
+                style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"none",cursor:saving||!name.trim()?"not-allowed":"pointer",
+                  background:saving||!name.trim()?"#9ca3af":"#111827",color:"#fff",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+                {saving ? "…" : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       )}
