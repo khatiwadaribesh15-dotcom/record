@@ -47,6 +47,19 @@ const iLabel = {
   textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:"5px",
 };
 
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return isMobile;
+}
+
 // ─── Modal portal ─────────────────────────────────────────────────────────────
 function Modal({ onClose, children, maxWidth="460px" }) {
   useEffect(() => {
@@ -78,6 +91,7 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
   const [amt,    setAmt]    = useState(entry.amount       ?? "");
   const [cnum,   setCnum]   = useState(entry.chime_number ?? "");
   const [saving, setSaving] = useState(false);
+  const isMobile = useIsMobile();
 
   async function handleSave() {
     if (!name.trim()) return;
@@ -105,16 +119,16 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
       <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
         <div>
           <label style={iLabel}>Name</label>
-          <input autoFocus style={iInput} value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
+          <input autoFocus style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:"12px"}}>
           <div>
             <label style={iLabel}>Amount ($)</label>
-            <input type="number" step="0.01" style={iInput} value={amt} onChange={e=>setAmt(e.target.value)} />
+            <input type="number" step="0.01" style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} value={amt} onChange={e=>setAmt(e.target.value)} />
           </div>
           <div>
             <label style={iLabel}>{numLabel}</label>
-            <input style={iInput} placeholder="Phone or account number" value={cnum} onChange={e=>setCnum(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
+            <input style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} placeholder="Phone or account number" value={cnum} onChange={e=>setCnum(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
           </div>
         </div>
       </div>
@@ -402,6 +416,7 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
   const [saving,    setSaving]    = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [addHov,    setAddHov]    = useState(false);
+  const isMobile = useIsMobile();
 
   const isChime  = side === "chime";
   const label    = isChime ? "Chime" : "Cashapp";
@@ -535,26 +550,26 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
         {/* Add form */}
         {showForm && (
           <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 80px 110px 80px auto",gap:"8px",alignItems:"center"}}>
+            <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 80px 110px 80px auto",gap:"10px",alignItems:isMobile?"stretch":"center"}}>
               <div>
                 <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
                 <input placeholder="Full name" value={name} autoFocus onChange={e=>setName(e.target.value)} onKeyDown={onKey}
-                  style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
               </div>
               <div>
                 <label style={{...iLabel,marginBottom:"3px"}}>{numLabel}</label>
                 <input placeholder={numPlaceholder} value={cnum} onChange={e=>setCnum(e.target.value)}
-                  style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
               </div>
               <div>
                 <label style={{...iLabel,marginBottom:"3px"}}>Amount</label>
                 <input type="number" placeholder="$0" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={onKey}
-                  style={{...iInput,fontSize:"12px",padding:"7px 9px"}} />
+                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
               </div>
-              <div style={{paddingTop:"18px"}}>
+              <div style={{paddingTop:isMobile?"0":"18px"}}>
                 <button onClick={handleAdd} disabled={saving}
-                  style={{fontSize:"13px",fontWeight:600,padding:"7px 16px",borderRadius:"7px",border:"none",cursor:"pointer",
-                    background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap"}}>
+                  style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"none",cursor:"pointer",
+                    background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap",width:isMobile?"100%":"auto"}}>
                   {saving ? "…" : "Save"}
                 </button>
               </div>
@@ -575,15 +590,7 @@ function StatusTable() {
   const [num,      setNum]      = useState("");
   const [side,     setSide]     = useState("chime");
   const [saving,   setSaving]   = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 640px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function load() {
