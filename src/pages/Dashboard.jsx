@@ -4,47 +4,73 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
 );
 
-const DAYS  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-const SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+const SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function fmt(n) {
-  return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  return (
+    "$" +
+    Number(n).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 function todayStr() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function getDayFull(s) {
   if (!s) return "";
-  const [y,m,d] = s.split("-");
-  return DAYS[new Date(+y,+m-1,+d).getDay()];
+  const [y, m, d] = s.split("-");
+  return DAYS[new Date(+y, +m - 1, +d).getDay()];
 }
 function getDayShort(s) {
   if (!s) return "";
-  const [y,m,d] = s.split("-");
-  return SHORT[new Date(+y,+m-1,+d).getDay()];
+  const [y, m, d] = s.split("-");
+  return SHORT[new Date(+y, +m - 1, +d).getDay()];
 }
 
 const DAY_PILL = {
-  Mon:"bg-blue-50 text-blue-800", Tue:"bg-blue-50 text-blue-800",
-  Wed:"bg-blue-50 text-blue-800", Thu:"bg-blue-50 text-blue-800",
-  Fri:"bg-blue-50 text-blue-800", Sat:"bg-emerald-50 text-emerald-800",
-  Sun:"bg-amber-50 text-amber-800",
+  Mon: "bg-blue-50 text-blue-800",
+  Tue: "bg-blue-50 text-blue-800",
+  Wed: "bg-blue-50 text-blue-800",
+  Thu: "bg-blue-50 text-blue-800",
+  Fri: "bg-blue-50 text-blue-800",
+  Sat: "bg-emerald-50 text-emerald-800",
+  Sun: "bg-amber-50 text-amber-800",
 };
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const iInput = {
-  width:"100%", fontSize:"13px", padding:"8px 10px",
-  border:"1px solid #e5e7eb", borderRadius:"7px",
-  backgroundColor:"#f9fafb", color:"#1f2937",
-  outline:"none", boxSizing:"border-box",
+  width: "100%",
+  fontSize: "13px",
+  padding: "8px 10px",
+  border: "1px solid #e5e7eb",
+  borderRadius: "7px",
+  backgroundColor: "#f9fafb",
+  color: "#1f2937",
+  outline: "none",
+  boxSizing: "border-box",
 };
 const iLabel = {
-  display:"block", fontSize:"11px", color:"#9ca3af",
-  textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:"5px",
+  display: "block",
+  fontSize: "11px",
+  color: "#9ca3af",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  marginBottom: "5px",
 };
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -61,35 +87,51 @@ function useIsMobile() {
 }
 
 // ─── Modal portal ─────────────────────────────────────────────────────────────
-function Modal({ onClose, children, maxWidth="460px" }) {
+function Modal({ onClose, children, maxWidth = "460px" }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
   return createPortal(
-    <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{
-      position:"fixed",inset:0,zIndex:9999,
-      backgroundColor:"rgba(0,0,0,0.5)",
-      display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",
-    }}>
-      <div style={{
-        backgroundColor:"#fff",borderRadius:"16px",
-        width:"100%",maxWidth,padding:"24px",
-        boxShadow:"0 20px 60px rgba(0,0,0,0.25)",
-        maxHeight:"90vh",overflowY:"auto",
-      }}>
+    <div
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: "16px",
+          width: "100%",
+          maxWidth,
+          padding: "24px",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
         {children}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 // ─── Entry Edit Modal ─────────────────────────────────────────────────────────
 function EntryEditModal({ entry, isChime, onSave, onClose }) {
-  const [name,   setName]   = useState(entry.name         ?? "");
-  const [amt,    setAmt]    = useState(entry.amount       ?? "");
-  const [cnum,   setCnum]   = useState(entry.chime_number ?? "");
+  const [name, setName] = useState(entry.name ?? "");
+  const [amt, setAmt] = useState(entry.amount ?? "");
+  const [cnum, setCnum] = useState(entry.chime_number ?? "");
   const [saving, setSaving] = useState(false);
   const isMobile = useIsMobile();
 
@@ -97,38 +139,134 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
     if (!name.trim()) return;
     setSaving(true);
     await onSave(entry.id, {
-      name:         name.trim(),
-      amount:       parseFloat(amt)||0,
-      chime_number: cnum.trim()||null,
+      name: name.trim(),
+      amount: parseFloat(amt) || 0,
+      chime_number: cnum.trim() || null,
     });
-    setSaving(false); onClose();
+    setSaving(false);
+    onClose();
   }
 
   const numLabel = isChime ? "Chime number" : "Cashapp number";
 
   return (
     <Modal onClose={onClose}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
-        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0,flex:1}}>Edit entry</h2>
-        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-          <button onClick={onClose} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-          <button onClick={handleSave} disabled={saving||!name.trim()} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#111827",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
-          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "18px",
+          gap: "8px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "#111827",
+            margin: 0,
+            flex: 1,
+          }}
+        >
+          Edit entry
+        </h2>
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "13px",
+              padding: "6px 14px",
+              border: "1px solid #e5e7eb",
+              borderRadius: "7px",
+              background: "#fff",
+              color: "#6b7280",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || !name.trim()}
+            style={{
+              fontSize: "13px",
+              padding: "6px 14px",
+              fontWeight: 600,
+              borderRadius: "7px",
+              border: "none",
+              background: saving ? "#9ca3af" : "#111827",
+              color: "#fff",
+              cursor: saving ? "not-allowed" : "pointer",
+            }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "22px",
+              color: "#9ca3af",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              lineHeight: 1,
+              marginLeft: "4px",
+            }}
+          >
+            ×
+          </button>
         </div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div>
           <label style={iLabel}>Name</label>
-          <input autoFocus style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
+          <input
+            autoFocus
+            style={{
+              ...iInput,
+              fontSize: isMobile ? "15px" : "13px",
+              padding: isMobile ? "11px 13px" : "8px 10px",
+            }}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          />
         </div>
-        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:"12px"}}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: "12px",
+          }}
+        >
           <div>
             <label style={iLabel}>Amount ($)</label>
-            <input type="number" step="0.01" style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} value={amt} onChange={e=>setAmt(e.target.value)} />
+            <input
+              type="number"
+              step="0.01"
+              style={{
+                ...iInput,
+                fontSize: isMobile ? "15px" : "13px",
+                padding: isMobile ? "11px 13px" : "8px 10px",
+              }}
+              value={amt}
+              onChange={(e) => setAmt(e.target.value)}
+            />
           </div>
           <div>
             <label style={iLabel}>{numLabel}</label>
-            <input style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} placeholder="Phone or account number" value={cnum} onChange={e=>setCnum(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} />
+            <input
+              style={{
+                ...iInput,
+                fontSize: isMobile ? "15px" : "13px",
+                padding: isMobile ? "11px 13px" : "8px 10px",
+              }}
+              placeholder="Phone or account number"
+              value={cnum}
+              onChange={(e) => setCnum(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            />
           </div>
         </div>
       </div>
@@ -138,50 +276,189 @@ function EntryEditModal({ entry, isChime, onSave, onClose }) {
 
 // ─── Record Edit Modal ────────────────────────────────────────────────────────
 function RecordEditModal({ record, onSave, onClose }) {
-  const [date,    setDate]    = useState(record.date          ?? "");
-  const [chime,   setChime]   = useState(record.chime_total   ?? "");
+  const [date, setDate] = useState(record.date ?? "");
+  const [chime, setChime] = useState(record.chime_total ?? "");
   const [cashapp, setCashapp] = useState(record.cashapp_total ?? "");
-  const [note,    setNote]    = useState(record.note          ?? "");
-  const [saving,  setSaving]  = useState(false);
+  const [note, setNote] = useState(record.note ?? "");
+  const [saving, setSaving] = useState(false);
 
   async function handleSave() {
     setSaving(true);
     await onSave(record.id, {
-      date, day_name:getDayFull(date),
-      chime_total:   parseFloat(chime)||0,
-      cashapp_total: parseFloat(cashapp)||0,
-      note:          note.trim()||null,
+      date,
+      day_name: getDayFull(date),
+      chime_total: parseFloat(chime) || 0,
+      cashapp_total: parseFloat(cashapp) || 0,
+      note: note.trim() || null,
     });
-    setSaving(false); onClose();
+    setSaving(false);
+    onClose();
   }
 
-  const preview = (parseFloat(chime)||0)+(parseFloat(cashapp)||0);
+  const preview = (parseFloat(chime) || 0) + (parseFloat(cashapp) || 0);
 
   return (
     <Modal onClose={onClose}>
       {/* Top bar: title + Save/Cancel */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
-        <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0,flex:1}}>Edit record</h2>
-        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-          <button onClick={onClose} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#059669",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
-          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "18px",
+          gap: "8px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "#111827",
+            margin: 0,
+            flex: 1,
+          }}
+        >
+          Edit record
+        </h2>
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "13px",
+              padding: "6px 14px",
+              border: "1px solid #e5e7eb",
+              borderRadius: "7px",
+              background: "#fff",
+              color: "#6b7280",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              fontSize: "13px",
+              padding: "6px 14px",
+              fontWeight: 600,
+              borderRadius: "7px",
+              border: "none",
+              background: saving ? "#9ca3af" : "#059669",
+              color: "#fff",
+              cursor: saving ? "not-allowed" : "pointer",
+            }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "22px",
+              color: "#9ca3af",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              lineHeight: 1,
+              marginLeft: "4px",
+            }}
+          >
+            ×
+          </button>
         </div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
-          <div><label style={iLabel}>Date</label><input type="date" style={iInput} value={date} onChange={e=>setDate(e.target.value)} /></div>
-          <div><label style={iLabel}>Day</label><input readOnly style={{...iInput,color:"#6b7280",backgroundColor:"#f3f4f6"}} value={getDayFull(date)} /></div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+          }}
+        >
+          <div>
+            <label style={iLabel}>Date</label>
+            <input
+              type="date"
+              style={iInput}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label style={iLabel}>Day</label>
+            <input
+              readOnly
+              style={{
+                ...iInput,
+                color: "#6b7280",
+                backgroundColor: "#f3f4f6",
+              }}
+              value={getDayFull(date)}
+            />
+          </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
-          <div><label style={iLabel}>Chime ($)</label><input type="number" step="0.01" style={{...iInput,color:"#065f46"}} value={chime} onChange={e=>setChime(e.target.value)} /></div>
-          <div><label style={iLabel}>Cashapp ($)</label><input type="number" step="0.01" style={{...iInput,color:"#1e40af"}} value={cashapp} onChange={e=>setCashapp(e.target.value)} /></div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+          }}
+        >
+          <div>
+            <label style={iLabel}>Chime ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              style={{ ...iInput, color: "#065f46" }}
+              value={chime}
+              onChange={(e) => setChime(e.target.value)}
+            />
+          </div>
+          <div>
+            <label style={iLabel}>Cashapp ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              style={{ ...iInput, color: "#1e40af" }}
+              value={cashapp}
+              onChange={(e) => setCashapp(e.target.value)}
+            />
+          </div>
         </div>
-        <div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:"8px",padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{fontSize:"12px",color:"#166534"}}>Total</span>
-          <span style={{fontSize:"15px",fontWeight:600,color:"#166534",fontFamily:"monospace"}}>{fmt(preview)}</span>
+        <div
+          style={{
+            background: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderRadius: "8px",
+            padding: "10px 14px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "12px", color: "#166534" }}>Total</span>
+          <span
+            style={{
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#166534",
+              fontFamily: "monospace",
+            }}
+          >
+            {fmt(preview)}
+          </span>
         </div>
-        <div><label style={iLabel}>Note</label><input type="text" placeholder="Optional…" style={iInput} value={note} onChange={e=>setNote(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSave()} /></div>
+        <div>
+          <label style={iLabel}>Note</label>
+          <input
+            type="text"
+            placeholder="Optional…"
+            style={iInput}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          />
+        </div>
       </div>
     </Modal>
   );
@@ -189,31 +466,47 @@ function RecordEditModal({ record, onSave, onClose }) {
 
 // ─── Snapshot Modal ───────────────────────────────────────────────────────────
 function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
-  const [snapshots,  setSnapshots]  = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [editSnap,   setEditSnap]   = useState(null);
+  const [snapshots, setSnapshots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editSnap, setEditSnap] = useState(null);
   const [deleteSnap, setDeleteSnap] = useState(null);
 
   async function syncRecordTotals(nextSnaps) {
-    const chime_total   = nextSnaps.filter(s=>s.side==="chime")  .reduce((s,r)=>s+Number(r.amount),0);
-    const cashapp_total = nextSnaps.filter(s=>s.side==="cashapp").reduce((s,r)=>s+Number(r.amount),0);
-    await supabase.from("daily_records").update({ chime_total, cashapp_total }).eq("id", record.id);
+    const chime_total = nextSnaps
+      .filter((s) => s.side === "chime")
+      .reduce((s, r) => s + Number(r.amount), 0);
+    const cashapp_total = nextSnaps
+      .filter((s) => s.side === "cashapp")
+      .reduce((s, r) => s + Number(r.amount), 0);
+    await supabase
+      .from("daily_records")
+      .update({ chime_total, cashapp_total })
+      .eq("id", record.id);
     onRecordUpdate?.(record.id, { chime_total, cashapp_total });
   }
 
   useEffect(() => {
     async function load() {
       const { data } = await supabase
-        .from("daily_snapshots").select("*")
+        .from("daily_snapshots")
+        .select("*")
         .eq("record_id", record.id)
-        .order("side").order("created_at");
+        .order("side")
+        .order("created_at");
       const snaps = data ?? [];
       setSnapshots(snaps);
       setLoading(false);
 
-      const cT = snaps.filter(s=>s.side==="chime")  .reduce((s,r)=>s+Number(r.amount),0);
-      const aT = snaps.filter(s=>s.side==="cashapp").reduce((s,r)=>s+Number(r.amount),0);
-      if (Number(record.chime_total) !== cT || Number(record.cashapp_total) !== aT) {
+      const cT = snaps
+        .filter((s) => s.side === "chime")
+        .reduce((s, r) => s + Number(r.amount), 0);
+      const aT = snaps
+        .filter((s) => s.side === "cashapp")
+        .reduce((s, r) => s + Number(r.amount), 0);
+      if (
+        Number(record.chime_total) !== cT ||
+        Number(record.cashapp_total) !== aT
+      ) {
         await syncRecordTotals(snaps);
       }
     }
@@ -222,7 +515,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
 
   async function handleSaveSnap(id, changes) {
     await supabase.from("daily_snapshots").update(changes).eq("id", id);
-    const next = snapshots.map(s => s.id === id ? { ...s, ...changes } : s);
+    const next = snapshots.map((s) => (s.id === id ? { ...s, ...changes } : s));
     setSnapshots(next);
     setEditSnap(null);
     await syncRecordTotals(next);
@@ -230,7 +523,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
 
   async function handleDeleteSnap(id) {
     await supabase.from("daily_snapshots").delete().eq("id", id);
-    const next = snapshots.filter(s => s.id !== id);
+    const next = snapshots.filter((s) => s.id !== id);
     setSnapshots(next);
     setDeleteSnap(null);
     await syncRecordTotals(next);
@@ -240,43 +533,129 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
     const an = parseFloat(a.chime_number);
     const bn = parseFloat(b.chime_number);
     if (!isNaN(an) && !isNaN(bn)) return an - bn;
-    return (a.chime_number||"").localeCompare(b.chime_number||"");
+    return (a.chime_number || "").localeCompare(b.chime_number || "");
   };
-  const chimeSnaps   = snapshots.filter(s => s.side === "chime").sort(sortByNumber);
-  const cashappSnaps = snapshots.filter(s => s.side === "cashapp").sort(sortByNumber);
-  const chimeTotal   = chimeSnaps.reduce((s, r) => s + Number(r.amount), 0);
+  const chimeSnaps = snapshots
+    .filter((s) => s.side === "chime")
+    .sort(sortByNumber);
+  const cashappSnaps = snapshots
+    .filter((s) => s.side === "cashapp")
+    .sort(sortByNumber);
+  const chimeTotal = chimeSnaps.reduce((s, r) => s + Number(r.amount), 0);
   const cashappTotal = cashappSnaps.reduce((s, r) => s + Number(r.amount), 0);
-  const total        = chimeTotal + cashappTotal;
+  const total = chimeTotal + cashappTotal;
 
-  const th = { fontSize:"10px",color:"#6b7280",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.04em",padding:"8px 10px",textAlign:"left",borderBottom:"1px solid #f3f4f6",whiteSpace:"nowrap" };
-  const td = { fontSize:"12px",color:"#1f2937",padding:"8px 10px",borderBottom:"1px solid #f9fafb" };
+  const th = {
+    fontSize: "10px",
+    color: "#6b7280",
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    padding: "8px 10px",
+    textAlign: "left",
+    borderBottom: "1px solid #f3f4f6",
+    whiteSpace: "nowrap",
+  };
+  const td = {
+    fontSize: "12px",
+    color: "#1f2937",
+    padding: "8px 10px",
+    borderBottom: "1px solid #f9fafb",
+  };
 
   function SnapTable({ items, color, numLabel }) {
-    if (!items.length) return <p style={{fontSize:"12px",color:"#9ca3af",padding:"8px 0"}}>No entries</p>;
+    if (!items.length)
+      return (
+        <p style={{ fontSize: "12px", color: "#9ca3af", padding: "8px 0" }}>
+          No entries
+        </p>
+      );
     return (
-      <table style={{width:"100%",borderCollapse:"collapse"}}>
-        <thead><tr>
-          <th style={{...th,width:"36px"}}>#</th>
-          <th style={th}>Name</th>
-          <th style={{...th,width:"100px"}}>{numLabel}</th>
-          <th style={{...th,textAlign:"right",width:"80px"}}>Amount</th>
-          <th style={{...th,width:"120px"}} />
-        </tr></thead>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ ...th, width: "36px" }}>#</th>
+            <th style={th}>Name</th>
+            <th style={{ ...th, width: "100px" }}>{numLabel}</th>
+            <th style={{ ...th, textAlign: "right", width: "80px" }}>Amount</th>
+            <th style={{ ...th, width: "120px" }} />
+          </tr>
+        </thead>
         <tbody>
           {items.map((s, i) => (
-            <tr key={s.id} style={{borderBottom:"1px solid #f9fafb"}}>
-              <td style={td}><span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",borderRadius:"4px",padding:"1px 5px",fontFamily:"monospace"}}>{i+1}</span></td>
+            <tr key={s.id} style={{ borderBottom: "1px solid #f9fafb" }}>
+              <td style={td}>
+                <span
+                  style={{
+                    background: "#f3f4f6",
+                    color: "#6b7280",
+                    fontSize: "11px",
+                    borderRadius: "4px",
+                    padding: "1px 5px",
+                    fontFamily: "monospace",
+                  }}
+                >
+                  {i + 1}
+                </span>
+              </td>
               <td style={td}>{s.name}</td>
-              <td style={{...td,fontFamily:"monospace",fontSize:"11px",color:"#4b5563"}}>{s.chime_number||"—"}</td>
-              <td style={{...td,textAlign:"right",fontFamily:"monospace",fontWeight:600,color}}>{fmt(s.amount)}</td>
-              <td style={{...td,textAlign:"right"}}>
-                <div style={{display:"flex",gap:"4px",justifyContent:"flex-end"}}>
-                  <button onClick={()=>setEditSnap(s)}
-                    style={{fontSize:"11px",fontWeight:500,padding:"3px 9px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}>
+              <td
+                style={{
+                  ...td,
+                  fontFamily: "monospace",
+                  fontSize: "11px",
+                  color: "#4b5563",
+                }}
+              >
+                {s.chime_number || "—"}
+              </td>
+              <td
+                style={{
+                  ...td,
+                  textAlign: "right",
+                  fontFamily: "monospace",
+                  fontWeight: 600,
+                  color,
+                }}
+              >
+                {fmt(s.amount)}
+              </td>
+              <td style={{ ...td, textAlign: "right" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "4px",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <button
+                    onClick={() => setEditSnap(s)}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      padding: "3px 9px",
+                      borderRadius: "6px",
+                      border: "1px solid #e5e7eb",
+                      background: "#f9fafb",
+                      color: "#374151",
+                      cursor: "pointer",
+                    }}
+                  >
                     Edit
                   </button>
-                  <button onClick={()=>setDeleteSnap(s)}
-                    style={{fontSize:"11px",fontWeight:500,padding:"3px 9px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}>
+                  <button
+                    onClick={() => setDeleteSnap(s)}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      padding: "3px 9px",
+                      borderRadius: "6px",
+                      border: "1px solid #fecaca",
+                      background: "#fff1f2",
+                      color: "#ef4444",
+                      cursor: "pointer",
+                    }}
+                  >
                     Delete
                   </button>
                 </div>
@@ -284,9 +663,30 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
             </tr>
           ))}
           <tr>
-            <td colSpan={3} style={{...td,color:"#9ca3af",borderTop:"1px solid #e5e7eb",fontSize:"11px"}}>Total</td>
-            <td style={{...td,textAlign:"right",fontFamily:"monospace",fontWeight:700,color,borderTop:"1px solid #e5e7eb"}}>{fmt(items.reduce((s,r)=>s+Number(r.amount),0))}</td>
-            <td style={{borderTop:"1px solid #e5e7eb"}} />
+            <td
+              colSpan={3}
+              style={{
+                ...td,
+                color: "#9ca3af",
+                borderTop: "1px solid #e5e7eb",
+                fontSize: "11px",
+              }}
+            >
+              Total
+            </td>
+            <td
+              style={{
+                ...td,
+                textAlign: "right",
+                fontFamily: "monospace",
+                fontWeight: 700,
+                color,
+                borderTop: "1px solid #e5e7eb",
+              }}
+            >
+              {fmt(items.reduce((s, r) => s + Number(r.amount), 0))}
+            </td>
+            <td style={{ borderTop: "1px solid #e5e7eb" }} />
           </tr>
         </tbody>
       </table>
@@ -295,48 +695,219 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
 
   // ── Edit snap entry modal ──────────────────────────────────────────────────
   function SnapEditModal({ snap, numLabel, onClose: closeEdit }) {
-    const [name,   setName]   = useState(snap.name          ?? "");
-    const [amt,    setAmt]    = useState(snap.amount         ?? "");
-    const [cnum,   setCnum]   = useState(snap.chime_number  ?? "");
+    const [name, setName] = useState(snap.name ?? "");
+    const [amt, setAmt] = useState(snap.amount ?? "");
+    const [cnum, setCnum] = useState(snap.chime_number ?? "");
     const [saving, setSaving] = useState(false);
 
     async function save() {
       if (!name.trim()) return;
       setSaving(true);
-      await handleSaveSnap(snap.id, { name: name.trim(), amount: parseFloat(amt)||0, chime_number: cnum.trim()||null });
+      await handleSaveSnap(snap.id, {
+        name: name.trim(),
+        amount: parseFloat(amt) || 0,
+        chime_number: cnum.trim() || null,
+      });
       setSaving(false);
     }
 
     return createPortal(
-      <div onClick={e=>e.target===e.currentTarget&&closeEdit()} style={{position:"fixed",inset:0,zIndex:10000,backgroundColor:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
-        <div style={{backgroundColor:"#fff",borderRadius:"16px",width:"100%",maxWidth:"380px",padding:"24px",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"18px",gap:"8px"}}>
-            <h2 style={{fontSize:"15px",fontWeight:700,color:"#111827",margin:0,flex:1}}>Edit entry</h2>
-            <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-              <button onClick={closeEdit} style={{fontSize:"13px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-              <button onClick={save} disabled={saving||!name.trim()} style={{fontSize:"13px",padding:"6px 14px",fontWeight:600,borderRadius:"7px",border:"none",background:saving?"#9ca3af":"#111827",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>{saving?"Saving…":"Save"}</button>
-              <button onClick={closeEdit} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1,marginLeft:"4px"}}>×</button>
+      <div
+        onClick={(e) => e.target === e.currentTarget && closeEdit()}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "16px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            width: "100%",
+            maxWidth: "380px",
+            padding: "24px",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "18px",
+              gap: "8px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "#111827",
+                margin: 0,
+                flex: 1,
+              }}
+            >
+              Edit entry
+            </h2>
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <button
+                onClick={closeEdit}
+                style={{
+                  fontSize: "13px",
+                  padding: "6px 14px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "7px",
+                  background: "#fff",
+                  color: "#6b7280",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={save}
+                disabled={saving || !name.trim()}
+                style={{
+                  fontSize: "13px",
+                  padding: "6px 14px",
+                  fontWeight: 600,
+                  borderRadius: "7px",
+                  border: "none",
+                  background: saving ? "#9ca3af" : "#111827",
+                  color: "#fff",
+                  cursor: saving ? "not-allowed" : "pointer",
+                }}
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+              <button
+                onClick={closeEdit}
+                style={{
+                  fontSize: "22px",
+                  color: "#9ca3af",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                  marginLeft: "4px",
+                }}
+              >
+                ×
+              </button>
             </div>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             <div>
-              <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>Name</label>
-              <input autoFocus value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  color: "#9ca3af",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: "5px",
+                }}
+              >
+                Name
+              </label>
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && save()}
+                style={{
+                  width: "100%",
+                  fontSize: "13px",
+                  padding: "8px 10px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "7px",
+                  backgroundColor: "#f9fafb",
+                  color: "#1f2937",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+              }}
+            >
               <div>
-                <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>Amount ($)</label>
-                <input type="number" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "5px",
+                  }}
+                >
+                  Amount ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={amt}
+                  onChange={(e) => setAmt(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "7px",
+                    backgroundColor: "#f9fafb",
+                    color: "#1f2937",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
               </div>
               <div>
-                <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>{numLabel}</label>
-                <input value={cnum} onChange={e=>setCnum(e.target.value)} style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",backgroundColor:"#f9fafb",color:"#1f2937",outline:"none",boxSizing:"border-box"}} />
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "5px",
+                  }}
+                >
+                  {numLabel}
+                </label>
+                <input
+                  value={cnum}
+                  onChange={(e) => setCnum(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "7px",
+                    backgroundColor: "#f9fafb",
+                    color: "#1f2937",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -349,58 +920,275 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
       setDeleting(false);
     }
     return createPortal(
-      <div onClick={e=>e.target===e.currentTarget&&closeDelete()} style={{position:"fixed",inset:0,zIndex:10000,backgroundColor:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
-        <div style={{backgroundColor:"#fff",borderRadius:"16px",width:"100%",maxWidth:"340px",padding:"24px",boxShadow:"0 20px 60px rgba(0,0,0,0.25)",textAlign:"center"}}>
-          <div style={{fontSize:"36px",marginBottom:"12px"}}>🗑️</div>
-          <h2 style={{fontSize:"15px",fontWeight:700,color:"#111827",margin:"0 0 8px"}}>Delete entry?</h2>
-          <p style={{fontSize:"13px",color:"#6b7280",margin:"0 0 24px",lineHeight:1.5}}>{snap.name} · {fmt(snap.amount)}<br/>This cannot be undone.</p>
-          <div style={{display:"flex",gap:"8px"}}>
-            <button onClick={closeDelete} style={{flex:1,fontSize:"13px",padding:"9px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
-            <button onClick={confirm} disabled={deleting} style={{flex:1,fontSize:"13px",padding:"9px",fontWeight:600,borderRadius:"8px",border:"none",background:deleting?"#9ca3af":"#ef4444",color:"#fff",cursor:deleting?"not-allowed":"pointer"}}>{deleting?"Deleting…":"Delete"}</button>
+      <div
+        onClick={(e) => e.target === e.currentTarget && closeDelete()}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "16px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            width: "100%",
+            maxWidth: "340px",
+            padding: "24px",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "36px", marginBottom: "12px" }}>🗑️</div>
+          <h2
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: "#111827",
+              margin: "0 0 8px",
+            }}
+          >
+            Delete entry?
+          </h2>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#6b7280",
+              margin: "0 0 24px",
+              lineHeight: 1.5,
+            }}
+          >
+            {snap.name} · {fmt(snap.amount)}
+            <br />
+            This cannot be undone.
+          </p>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={closeDelete}
+              style={{
+                flex: 1,
+                fontSize: "13px",
+                padding: "9px",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                background: "#fff",
+                color: "#6b7280",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirm}
+              disabled={deleting}
+              style={{
+                flex: 1,
+                fontSize: "13px",
+                padding: "9px",
+                fontWeight: 600,
+                borderRadius: "8px",
+                border: "none",
+                background: deleting ? "#9ca3af" : "#ef4444",
+                color: "#fff",
+                cursor: deleting ? "not-allowed" : "pointer",
+              }}
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </button>
           </div>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
   return (
     <Modal onClose={onClose} maxWidth="620px">
-      {editSnap   && <SnapEditModal   snap={editSnap}   numLabel={editSnap.side==="chime"?"Chime No.":"Cashapp No."} onClose={()=>setEditSnap(null)}   />}
-      {deleteSnap && <SnapDeleteModal snap={deleteSnap}                                                             onClose={()=>setDeleteSnap(null)} />}
+      {editSnap && (
+        <SnapEditModal
+          snap={editSnap}
+          numLabel={editSnap.side === "chime" ? "Chime No." : "Cashapp No."}
+          onClose={() => setEditSnap(null)}
+        />
+      )}
+      {deleteSnap && (
+        <SnapDeleteModal
+          snap={deleteSnap}
+          onClose={() => setDeleteSnap(null)}
+        />
+      )}
 
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"16px",gap:"8px"}}>
-        <div style={{flex:1}}>
-          <h2 style={{fontSize:"15px",fontWeight:600,color:"#111827",margin:0}}>{record.date}</h2>
-          <p style={{fontSize:"12px",color:"#9ca3af",margin:"2px 0 0"}}>{record.day_name}{record.note?` · ${record.note}`:""}</p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+          gap: "8px",
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <h2
+            style={{
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#111827",
+              margin: 0,
+            }}
+          >
+            {record.date}
+          </h2>
+          <p style={{ fontSize: "12px", color: "#9ca3af", margin: "2px 0 0" }}>
+            {record.day_name}
+            {record.note ? ` · ${record.note}` : ""}
+          </p>
         </div>
-        <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-          <button onClick={()=>onEdit(record)} style={{fontSize:"12px",fontWeight:600,padding:"5px 14px",borderRadius:"7px",border:"1px solid #d1fae5",background:"#f0fdf4",color:"#059669",cursor:"pointer"}}>Edit</button>
-          <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <button
+            onClick={() => onEdit(record)}
+            style={{
+              fontSize: "12px",
+              fontWeight: 600,
+              padding: "5px 14px",
+              borderRadius: "7px",
+              border: "1px solid #d1fae5",
+              background: "#f0fdf4",
+              color: "#059669",
+              cursor: "pointer",
+            }}
+          >
+            Edit
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "22px",
+              color: "#9ca3af",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px",marginBottom:"20px"}}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
         {[
-          {label:"Chime",   value:fmt(chimeTotal),   color:"#065f46",bg:"#f0fdf4",border:"#bbf7d0"},
-          {label:"Cashapp", value:fmt(cashappTotal), color:"#1e3a8a",bg:"#eff6ff",border:"#bfdbfe"},
-          {label:"Total",   value:fmt(total),        color:"#111827",bg:"#f9fafb",border:"#e5e7eb"},
-        ].map(c=>(
-          <div key={c.label} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:"8px",padding:"10px 12px"}}>
-            <p style={{fontSize:"10px",color:c.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 3px"}}>{c.label}</p>
-            <p style={{fontSize:"16px",fontWeight:700,color:c.color,margin:0,fontFamily:"monospace"}}>{c.value}</p>
+          {
+            label: "Chime",
+            value: fmt(chimeTotal),
+            color: "#065f46",
+            bg: "#f0fdf4",
+            border: "#bbf7d0",
+          },
+          {
+            label: "Cashapp",
+            value: fmt(cashappTotal),
+            color: "#1e3a8a",
+            bg: "#eff6ff",
+            border: "#bfdbfe",
+          },
+          {
+            label: "Total",
+            value: fmt(total),
+            color: "#111827",
+            bg: "#f9fafb",
+            border: "#e5e7eb",
+          },
+        ].map((c) => (
+          <div
+            key={c.label}
+            style={{
+              background: c.bg,
+              border: `1px solid ${c.border}`,
+              borderRadius: "8px",
+              padding: "10px 12px",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "10px",
+                color: c.color,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                margin: "0 0 3px",
+              }}
+            >
+              {c.label}
+            </p>
+            <p
+              style={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: c.color,
+                margin: 0,
+                fontFamily: "monospace",
+              }}
+            >
+              {c.value}
+            </p>
           </div>
         ))}
       </div>
 
       {loading ? (
-        <p style={{textAlign:"center",fontSize:"13px",color:"#9ca3af",padding:"20px 0"}}>Loading…</p>
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "13px",
+            color: "#9ca3af",
+            padding: "20px 0",
+          }}
+        >
+          Loading…
+        </p>
       ) : (
         <>
-          <p style={{fontSize:"11px",fontWeight:600,color:"#059669",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"8px"}}>Chime entries</p>
+          <p
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "#059669",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              marginBottom: "8px",
+            }}
+          >
+            Chime entries
+          </p>
           <SnapTable items={chimeSnaps} color="#065f46" numLabel="Chime No." />
-          <p style={{fontSize:"11px",fontWeight:600,color:"#2563eb",textTransform:"uppercase",letterSpacing:"0.05em",margin:"16px 0 8px"}}>Cashapp entries</p>
-          <SnapTable items={cashappSnaps} color="#1e3a8a" numLabel="Cashapp No." />
+          <p
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "#2563eb",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              margin: "16px 0 8px",
+            }}
+          >
+            Cashapp entries
+          </p>
+          <SnapTable
+            items={cashappSnaps}
+            color="#1e3a8a"
+            numLabel="Cashapp No."
+          />
         </>
       )}
     </Modal>
@@ -409,22 +1197,22 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
 
 // ─── Entry Table ──────────────────────────────────────────────────────────────
 function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
-  const [showForm,  setShowForm]  = useState(false);
-  const [name,      setName]      = useState("");
-  const [amt,       setAmt]       = useState("");
-  const [cnum,      setCnum]      = useState("");
-  const [saving,    setSaving]    = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState("");
+  const [amt, setAmt] = useState("");
+  const [cnum, setCnum] = useState("");
+  const [saving, setSaving] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
-  const [addHov,    setAddHov]    = useState(false);
+  const [addHov, setAddHov] = useState(false);
   const isMobile = useIsMobile();
 
-  const isChime  = side === "chime";
-  const label    = isChime ? "Chime" : "Cashapp";
-  const dot      = isChime ? "#10b981" : "#3b82f6";
-  const addBg    = isChime ? "#059669" : "#2563eb";
+  const isChime = side === "chime";
+  const label = isChime ? "Chime" : "Cashapp";
+  const dot = isChime ? "#10b981" : "#3b82f6";
+  const addBg = isChime ? "#059669" : "#2563eb";
   const addHovBg = isChime ? "#047857" : "#1d4ed8";
   const amtColor = isChime ? "#065f46" : "#1e3a8a";
-  const saveBg   = isChime ? "#059669" : "#2563eb";
+  const saveBg = isChime ? "#059669" : "#2563eb";
   const numLabel = isChime ? "Chime No." : "Cashapp No.";
   const numPlaceholder = isChime ? "Chime number" : "Cashapp number";
 
@@ -433,53 +1221,93 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
     setSaving(true);
     await onAdd({
       side,
-      number:       String(entries.length + 1),
-      name:         name.trim(),
-      amount:       parseFloat(amt) || 0,
+      number: String(entries.length + 1),
+      name: name.trim(),
+      amount: parseFloat(amt) || 0,
       chime_number: cnum.trim() || null,
     });
-    setName(""); setAmt(""); setCnum("");
-    setShowForm(false); setSaving(false);
+    setName("");
+    setAmt("");
+    setCnum("");
+    setShowForm(false);
+    setSaving(false);
   }
 
-  function onKey(e) { if (e.key === "Enter") handleAdd(); }
+  function onKey(e) {
+    if (e.key === "Enter") handleAdd();
+  }
 
   // Sort entries by chime_number ascending (numeric if possible)
   const sorted = [...entries].sort((a, b) => {
     const an = parseFloat(a.chime_number);
     const bn = parseFloat(b.chime_number);
     if (!isNaN(an) && !isNaN(bn)) return an - bn;
-    return (a.chime_number||"").localeCompare(b.chime_number||"");
+    return (a.chime_number || "").localeCompare(b.chime_number || "");
   });
 
-  const total = entries.reduce((s,r) => s + Number(r.amount), 0);
+  const total = entries.reduce((s, r) => s + Number(r.amount), 0);
 
   return (
     <>
       {editEntry && (
         <EntryEditModal
-          entry={editEntry} isChime={isChime}
-          onSave={onEdit} onClose={()=>setEditEntry(null)}
+          entry={editEntry}
+          isChime={isChime}
+          onSave={onEdit}
+          onClose={() => setEditEntry(null)}
         />
       )}
 
-      <div style={{background:"#fff",border:"1px solid #f0f0f0",borderRadius:"14px",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #f0f0f0",
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+        }}
+      >
         {/* Header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",borderBottom:"1px solid #f3f4f6"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-            <span style={{width:"9px",height:"9px",borderRadius:"50%",backgroundColor:dot,display:"inline-block"}} />
-            <span style={{fontSize:"14px",fontWeight:600,color:"#111827"}}>{label}</span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 18px",
+            borderBottom: "1px solid #f3f4f6",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                width: "9px",
+                height: "9px",
+                borderRadius: "50%",
+                backgroundColor: dot,
+                display: "inline-block",
+              }}
+            />
+            <span
+              style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}
+            >
+              {label}
+            </span>
           </div>
           {!showForm && (
             <button
-              onMouseEnter={()=>setAddHov(true)} onMouseLeave={()=>setAddHov(false)}
-              onClick={()=>setShowForm(true)}
+              onMouseEnter={() => setAddHov(true)}
+              onMouseLeave={() => setAddHov(false)}
+              onClick={() => setShowForm(true)}
               style={{
-                fontSize:"13px",fontWeight:600,padding:"6px 18px",
-                borderRadius:"8px",border:"none",cursor:"pointer",color:"#fff",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "6px 18px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                color: "#fff",
                 background: addHov ? addHovBg : addBg,
-                transition:"background 0.15s",
+                transition: "background 0.15s",
               }}
             >
               + Add
@@ -488,61 +1316,268 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
         </div>
 
         {/* Table — no tableLayout:fixed so columns size naturally */}
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "13px",
+          }}
+        >
           <thead>
-            <tr style={{borderBottom:"1px solid #f3f4f6",background:"#fafafa"}}>
-              <th style={{fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 10px 9px 14px",textAlign:"left",width:"36px"}}>#</th>
-              <th style={{fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 10px",textAlign:"left"}}>Name</th>
-              <th style={{fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 10px",textAlign:"center",width:"90px"}}>{numLabel}</th>
-              <th style={{fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 14px 9px 10px",textAlign:"right",width:"90px"}}>Amount</th>
-              <th style={{width:"52px"}} />
+            <tr
+              style={{
+                borderBottom: "1px solid #f3f4f6",
+                background: "#fafafa",
+              }}
+            >
+              <th
+                style={{
+                  fontSize: "10px",
+                  color: "#9ca3af",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "9px 10px 9px 14px",
+                  //textAlign: "left",
+                  width: "36px",
+                }}
+              >
+                #
+              </th>
+              <th
+                style={{
+                  fontSize: "10px",
+                  color: "#9ca3af",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "9px 10px",
+                  //textAlign: "left",
+                }}
+              >
+                Name
+              </th>
+              <th
+                style={{
+                  fontSize: "10px",
+                  color: "#9ca3af",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "9px 10px",
+                  textAlign: "center",
+                  width: "10px",
+                }}
+              >
+                {numLabel}
+              </th>
+              <th
+                style={{
+                  fontSize: "10px",
+                  color: "#9ca3af",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "9px 14px 9px 10px",
+                  textAlign: "right",
+                  width: "90px",
+                }}
+              >
+                Amount
+              </th>
+              <th style={{ width: "52px" }} />
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>Loading…</td></tr>
-            ) : sorted.length === 0 ? (
-              <tr><td colSpan={6} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>No entries yet</td></tr>
-            ) : sorted.map((r, i) => (
-              <tr key={r.id}
-                style={{borderBottom:"1px solid #f9fafb",transition:"background 0.1s"}}
-                onMouseEnter={e => { e.currentTarget.style.background="#f9fafb"; }}
-                onMouseLeave={e => { e.currentTarget.style.background="";}}
-              >
-                <td style={{padding:"10px 10px 10px 14px"}}>
-                  <span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"2px 6px"}}>{i+1}</span>
-                </td>
-                {/* Name — full width, no truncation */}
-                <td style={{padding:"10px",color:"#1f2937",fontWeight:500,wordBreak:"break-word"}}>{r.name}</td>
-                {/* Chime/Cashapp number */}
-                <td style={{padding:"10px",textAlign:"center",fontFamily:"monospace",fontSize:"12px",color:"#374151",fontWeight:500}}>{r.chime_number || <span style={{color:"#e5e7eb"}}>—</span>}</td>
-                {/* Amount */}
-                <td style={{padding:"10px 14px 10px 10px",textAlign:"right",fontFamily:"monospace",fontSize:"13px",color:amtColor,fontWeight:700}}>{fmt(r.amount)}</td>
-                {/* Actions */}
-                <td style={{padding:"8px 10px 8px 0"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"4px"}}>
-                    <button onClick={()=>setEditEntry(r)}
-                      style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#eff6ff";e.currentTarget.style.borderColor="#bfdbfe";e.currentTarget.style.color="#2563eb";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="#f9fafb";e.currentTarget.style.borderColor="#e5e7eb";e.currentTarget.style.color="#374151";}}>
-                      Edit
-                    </button>
-                    <button onClick={()=>onHide(r.id)}
-                      style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#fee2e2";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="#fff1f2";}}>
-                      Delete
-                    </button>
-                  </div>
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    textAlign: "center",
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                    padding: "24px",
+                  }}
+                >
+                  Loading…
                 </td>
               </tr>
-            ))}
+            ) : sorted.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    textAlign: "center",
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                    padding: "24px",
+                  }}
+                >
+                  No entries yet
+                </td>
+              </tr>
+            ) : (
+              sorted.map((r, i) => (
+                <tr
+                  key={r.id}
+                  style={{
+                    borderBottom: "1px solid #f9fafb",
+                    transition: "background 0.1s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#f9fafb";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "";
+                  }}
+                >
+                  <td style={{ padding: "10px 10px 10px 14px" }}>
+                    <span
+                      style={{
+                        background: "#f3f4f6",
+                        color: "#6b7280",
+                        fontSize: "11px",
+                        fontFamily: "monospace",
+                        borderRadius: "4px",
+                        padding: "2px 6px",
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                  </td>
+                  {/* Name — full width, no truncation */}
+                  <td
+                    style={{
+                      padding: "10px",
+                      color: "#1f2937",
+                      fontWeight: 500,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {r.name}
+                  </td>
+                  {/* Chime/Cashapp number */}
+                  <td
+                    style={{
+                      padding: "10px",
+                      textAlign: "center",
+                      fontFamily: "monospace",
+                      fontSize: "12px",
+                      color: "#374151",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {r.chime_number || (
+                      <span style={{ color: "#e5e7eb" }}>—</span>
+                    )}
+                  </td>
+                  {/* Amount */}
+                  <td
+                    style={{
+                      padding: "10px 14px 10px 10px",
+                      textAlign: "right",
+                      fontFamily: "monospace",
+                      fontSize: "13px",
+                      color: amtColor,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {fmt(r.amount)}
+                  </td>
+                  {/* Actions */}
+                  <td style={{ padding: "8px 10px 8px 0" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        gap: "4px",
+                      }}
+                    >
+                      <button
+                        onClick={() => setEditEntry(r)}
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          border: "1px solid #e5e7eb",
+                          background: "#f9fafb",
+                          color: "#374151",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#eff6ff";
+                          e.currentTarget.style.borderColor = "#bfdbfe";
+                          e.currentTarget.style.color = "#2563eb";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#f9fafb";
+                          e.currentTarget.style.borderColor = "#e5e7eb";
+                          e.currentTarget.style.color = "#374151";
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onHide(r.id)}
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          border: "1px solid #fecaca",
+                          background: "#fff1f2",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#fee2e2";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#fff1f2";
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
           {sorted.length > 0 && (
             <tfoot>
-              <tr style={{borderTop:"2px solid #f3f4f6",background:"#fafafa"}}>
-                <td colSpan={4} style={{padding:"10px 10px 10px 14px",fontSize:"12px",color:"#9ca3af",fontWeight:500}}>Total</td>
-                <td style={{padding:"10px 14px 10px 10px",textAlign:"right",fontFamily:"monospace",fontSize:"13px",fontWeight:700,color:amtColor}}>{fmt(total)}</td>
+              <tr
+                style={{
+                  borderTop: "2px solid #f3f4f6",
+                  background: "#fafafa",
+                }}
+              >
+                <td
+                  colSpan={4}
+                  style={{
+                    padding: "10px 10px 10px 14px",
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                    fontWeight: 500,
+                  }}
+                >
+                  Total
+                </td>
+                <td
+                  style={{
+                    padding: "10px 14px 10px 10px",
+                    textAlign: "right",
+                    fontFamily: "monospace",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    color: amtColor,
+                  }}
+                >
+                  {fmt(total)}
+                </td>
                 <td />
               </tr>
             </tfoot>
@@ -551,31 +1586,113 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
 
         {/* Add form */}
         {showForm && (
-          <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
-            <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 100px 100px auto",gap:"10px",alignItems:isMobile?"stretch":"center"}}>
+          <div
+            style={{
+              borderTop: "1px solid #f3f4f6",
+              background: "#f9fafb",
+              padding: "12px 14px",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 100px 100px auto",
+                gap: "10px",
+                alignItems: isMobile ? "stretch" : "center",
+              }}
+            >
               <div>
-                <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
-                <input placeholder="Full name" value={name} autoFocus onChange={e=>setName(e.target.value)} onKeyDown={onKey}
-                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
+                <label style={{ ...iLabel, marginBottom: "3px" }}>Name</label>
+                <input
+                  placeholder="Full name"
+                  value={name}
+                  autoFocus
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={onKey}
+                  style={{
+                    ...iInput,
+                    fontSize: isMobile ? "15px" : "12px",
+                    padding: isMobile ? "11px 13px" : "7px 9px",
+                  }}
+                />
               </div>
               <div>
-                <label style={{...iLabel,marginBottom:"3px"}}>{numLabel}</label>
-                <input placeholder={numPlaceholder} value={cnum} onChange={e=>setCnum(e.target.value)}
-                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
+                <label style={{ ...iLabel, marginBottom: "3px" }}>
+                  {numLabel}
+                </label>
+                <input
+                  placeholder={numPlaceholder}
+                  value={cnum}
+                  onChange={(e) => setCnum(e.target.value)}
+                  style={{
+                    ...iInput,
+                    fontSize: isMobile ? "15px" : "12px",
+                    padding: isMobile ? "11px 13px" : "7px 9px",
+                  }}
+                />
               </div>
               <div>
-                <label style={{...iLabel,marginBottom:"3px"}}>Amount</label>
-                <input type="number" placeholder="$0" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={onKey}
-                  style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
+                <label style={{ ...iLabel, marginBottom: "3px" }}>Amount</label>
+                <input
+                  type="number"
+                  placeholder="$0"
+                  step="0.01"
+                  value={amt}
+                  onChange={(e) => setAmt(e.target.value)}
+                  onKeyDown={onKey}
+                  style={{
+                    ...iInput,
+                    fontSize: isMobile ? "15px" : "12px",
+                    padding: isMobile ? "11px 13px" : "7px 9px",
+                  }}
+                />
               </div>
-              <div style={{paddingTop:isMobile?"0":"18px",display:"flex",gap:"8px"}}>
-                <button onClick={()=>{setShowForm(false);setName("");setAmt("");setCnum("");}}
-                  style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"1px solid #e5e7eb",background:"#fff",color:"#6b7280",cursor:"pointer",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+              <div
+                style={{
+                  paddingTop: isMobile ? "0" : "18px",
+                  display: "flex",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setShowForm(false);
+                    setName("");
+                    setAmt("");
+                    setCnum("");
+                  }}
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    padding: isMobile ? "11px 16px" : "7px 16px",
+                    borderRadius: "7px",
+                    border: "1px solid #e5e7eb",
+                    background: "#fff",
+                    color: "#6b7280",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flex: isMobile ? 1 : "none",
+                  }}
+                >
                   Cancel
                 </button>
-                <button onClick={handleAdd} disabled={saving}
-                  style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"none",cursor:"pointer",
-                    background:saveBg,color:"#fff",opacity:saving?0.5:1,whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+                <button
+                  onClick={handleAdd}
+                  disabled={saving}
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    padding: isMobile ? "11px 16px" : "7px 16px",
+                    borderRadius: "7px",
+                    border: "none",
+                    cursor: "pointer",
+                    background: saveBg,
+                    color: "#fff",
+                    opacity: saving ? 0.5 : 1,
+                    whiteSpace: "nowrap",
+                    flex: isMobile ? 1 : "none",
+                  }}
+                >
                   {saving ? "…" : "Save"}
                 </button>
               </div>
@@ -589,18 +1706,21 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
 
 // ─── Status Table ─────────────────────────────────────────────────────────────
 function StatusTable() {
-  const [items,    setItems]    = useState([]);
-  const [loading,  setLoading]  = useState(true);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [name,     setName]     = useState("");
-  const [num,      setNum]      = useState("");
-  const [side,     setSide]     = useState("chime");
-  const [saving,   setSaving]   = useState(false);
+  const [name, setName] = useState("");
+  const [num, setNum] = useState("");
+  const [side, setSide] = useState("chime");
+  const [saving, setSaving] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("status_entries").select("*").order("created_at",{ascending:true});
+      const { data } = await supabase
+        .from("status_entries")
+        .select("*")
+        .order("created_at", { ascending: true });
       setItems(data ?? []);
       setLoading(false);
     }
@@ -610,137 +1730,378 @@ function StatusTable() {
   async function handleAdd() {
     if (!name.trim()) return;
     setSaving(true);
-    const { data } = await supabase.from("status_entries")
-      .insert({ name:name.trim(), side, st_number:num.trim()||null, st_using:false, st_paying:false, st_done:false })
+    const { data } = await supabase
+      .from("status_entries")
+      .insert({
+        name: name.trim(),
+        side,
+        st_number: num.trim() || null,
+        st_using: false,
+        st_paying: false,
+        st_done: false,
+      })
       .select();
-    if (data) setItems(prev => [...prev, data[0]]);
-    setName(""); setNum(""); setSide("chime"); setShowForm(false); setSaving(false);
+    if (data) setItems((prev) => [...prev, data[0]]);
+    setName("");
+    setNum("");
+    setSide("chime");
+    setShowForm(false);
+    setSaving(false);
   }
 
   async function toggle(id, key) {
-    const item = items.find(i => i.id === id);
+    const item = items.find((i) => i.id === id);
     if (!item) return;
     const newVal = !item[key];
     const changes = { [key]: newVal };
-    if (key === "st_done" && newVal) { changes.st_using = false; changes.st_paying = false; }
-    setItems(prev => prev.map(i => i.id === id ? { ...i, ...changes } : i));
+    if (key === "st_done" && newVal) {
+      changes.st_using = false;
+      changes.st_paying = false;
+    }
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, ...changes } : i)),
+    );
     await supabase.from("status_entries").update(changes).eq("id", id);
   }
 
   async function handleDelete(id) {
     await supabase.from("status_entries").delete().eq("id", id);
-    setItems(prev => prev.filter(i => i.id !== id));
+    setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  const sideColor = s => s === "chime" ? "#10b981" : "#3b82f6";
-  const sidePill  = s => s === "chime"
-    ? { bg:"#f0fdf4", color:"#065f46", border:"#bbf7d0" }
-    : { bg:"#eff6ff", color:"#1e3a8a", border:"#bfdbfe" };
+  const sideColor = (s) => (s === "chime" ? "#10b981" : "#3b82f6");
+  const sidePill = (s) =>
+    s === "chime"
+      ? { bg: "#f0fdf4", color: "#065f46", border: "#bbf7d0" }
+      : { bg: "#eff6ff", color: "#1e3a8a", border: "#bfdbfe" };
 
-  const th = { fontSize:"10px",color:"#9ca3af",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",padding:"9px 10px" };
+  const th = {
+    fontSize: "10px",
+    color: "#9ca3af",
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    padding: "9px 10px",
+  };
 
   return (
-    <div style={{background:"#fff",border:"1px solid #f0f0f0",borderRadius:"14px",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:"28px"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",borderBottom:"1px solid #f3f4f6"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-          <span style={{fontSize:"14px",fontWeight:600,color:"#111827"}}>Status</span>
-          <span style={{fontSize:"11px",color:"#9ca3af"}}>{items.length} record{items.length===1?"":"s"}</span>
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #f0f0f0",
+        borderRadius: "14px",
+        overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+        marginBottom: "28px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 18px",
+          borderBottom: "1px solid #f3f4f6",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+            Status
+          </span>
+          <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+            {items.length} record{items.length === 1 ? "" : "s"}
+          </span>
         </div>
-        <button onClick={()=>setShowForm(v=>!v)} style={{
-          fontSize:"13px",fontWeight:600,padding:"6px 18px",borderRadius:"8px",border:"none",cursor:"pointer",color:"#fff",
-          background: showForm ? "#6b7280" : "#111827",
-        }}>{showForm ? "Cancel" : "+ Add"}</button>
+        <button
+          onClick={() => setShowForm((v) => !v)}
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            padding: "6px 18px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            color: "#fff",
+            background: showForm ? "#6b7280" : "#111827",
+          }}
+        >
+          {showForm ? "Cancel" : "+ Add"}
+        </button>
       </div>
 
-      <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
+      <table
+        style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}
+      >
         <thead>
-          <tr style={{borderBottom:"1px solid #f3f4f6",background:"#fafafa"}}>
-            <th style={{...th,textAlign:"left",paddingLeft:"14px"}}>Name</th>
-            <th style={{...th,textAlign:"left",width:"100px"}}>Number</th>
-            <th style={{...th,textAlign:"left",width:"100px"}}>Type</th>
-            <th style={{...th,textAlign:"center",width:"80px"}}>Using</th>
-            <th style={{...th,textAlign:"center",width:"80px"}}>Paying</th>
-            <th style={{...th,textAlign:"center",width:"80px"}}>Done</th>
-            <th style={{width:"60px"}} />
+          <tr
+            style={{ borderBottom: "1px solid #f3f4f6", background: "#fafafa" }}
+          >
+            <th style={{ ...th, textAlign: "left", paddingLeft: "14px" }}>
+              Name
+            </th>
+            <th style={{ ...th, textAlign: "left", width: "100px" }}>Number</th>
+            <th style={{ ...th, textAlign: "left", width: "100px" }}>Type</th>
+            <th style={{ ...th, textAlign: "center", width: "80px" }}>Using</th>
+            <th style={{ ...th, textAlign: "center", width: "80px" }}>
+              Paying
+            </th>
+            <th style={{ ...th, textAlign: "center", width: "80px" }}>Done</th>
+            <th style={{ width: "60px" }} />
           </tr>
         </thead>
         <tbody>
           {loading ? (
-            <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>Loading…</td></tr>
+            <tr>
+              <td
+                colSpan={7}
+                style={{
+                  textAlign: "center",
+                  fontSize: "12px",
+                  color: "#9ca3af",
+                  padding: "24px",
+                }}
+              >
+                Loading…
+              </td>
+            </tr>
           ) : items.length === 0 ? (
-            <tr><td colSpan={7} style={{textAlign:"center",fontSize:"12px",color:"#9ca3af",padding:"24px"}}>No records yet</td></tr>
-          ) : [...items].sort((a,b)=>{
-            const an = parseFloat(a.st_number);
-            const bn = parseFloat(b.st_number);
-            if (!isNaN(an) && !isNaN(bn)) return an - bn;
-            return (a.st_number||"").localeCompare(b.st_number||"");
-          }).map(r => {
-            const pill = sidePill(r.side);
-            return (
-              <tr key={r.id} style={{borderBottom:"1px solid #f9fafb"}}>
-                <td style={{padding:"10px 14px",textAlign:"left",color:"#1f2937",fontWeight:500}}>{r.name}</td>
-                <td style={{padding:"10px",textAlign:"left",fontFamily:"monospace",fontSize:"12px",color:"#374151"}}>
-                  {r.st_number || <span style={{color:"#e5e7eb"}}>—</span>}
-                </td>
-                <td style={{padding:"10px",textAlign:"left"}}>
-                  <span style={{fontSize:"11px",fontWeight:600,padding:"2px 8px",borderRadius:"6px",background:pill.bg,color:pill.color,border:`1px solid ${pill.border}`,textTransform:"capitalize"}}>{r.side}</span>
-                </td>
-                {["st_using","st_paying","st_done"].map(k => (
-                  <td key={k} style={{padding:"10px",textAlign:"center"}}>
-                    <input type="checkbox" checked={r[k]} onChange={()=>toggle(r.id,k)}
-                      style={{cursor:"pointer",accentColor:sideColor(r.side),width:"15px",height:"15px"}} />
-                  </td>
-                ))}
-                <td style={{padding:"10px"}}>
-                  <button onClick={()=>handleDelete(r.id)}
-                    style={{fontSize:"11px",fontWeight:500,padding:"4px 10px",borderRadius:"6px",border:"1px solid #fecaca",background:"#fff1f2",color:"#ef4444",cursor:"pointer"}}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
+            <tr>
+              <td
+                colSpan={7}
+                style={{
+                  textAlign: "center",
+                  fontSize: "12px",
+                  color: "#9ca3af",
+                  padding: "24px",
+                }}
+              >
+                No records yet
+              </td>
+            </tr>
+          ) : (
+            [...items]
+              .sort((a, b) => {
+                const an = parseFloat(a.st_number);
+                const bn = parseFloat(b.st_number);
+                if (!isNaN(an) && !isNaN(bn)) return an - bn;
+                return (a.st_number || "").localeCompare(b.st_number || "");
+              })
+              .map((r) => {
+                const pill = sidePill(r.side);
+                return (
+                  <tr key={r.id} style={{ borderBottom: "1px solid #f9fafb" }}>
+                    <td
+                      style={{
+                        padding: "10px 14px",
+                        textAlign: "left",
+                        color: "#1f2937",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {r.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "10px",
+                        textAlign: "left",
+                        fontFamily: "monospace",
+                        fontSize: "12px",
+                        color: "#374151",
+                      }}
+                    >
+                      {r.st_number || (
+                        <span style={{ color: "#e5e7eb" }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "10px", textAlign: "left" }}>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          padding: "2px 8px",
+                          borderRadius: "6px",
+                          background: pill.bg,
+                          color: pill.color,
+                          border: `1px solid ${pill.border}`,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {r.side}
+                      </span>
+                    </td>
+                    {["st_using", "st_paying", "st_done"].map((k) => (
+                      <td
+                        key={k}
+                        style={{ padding: "10px", textAlign: "center" }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={r[k]}
+                          onChange={() => toggle(r.id, k)}
+                          style={{
+                            cursor: "pointer",
+                            accentColor: sideColor(r.side),
+                            width: "15px",
+                            height: "15px",
+                          }}
+                        />
+                      </td>
+                    ))}
+                    <td style={{ padding: "10px" }}>
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          border: "1px solid #fecaca",
+                          background: "#fff1f2",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+          )}
         </tbody>
       </table>
 
       {showForm && (
-        <div style={{borderTop:"1px solid #f3f4f6",background:"#f9fafb",padding:"12px 14px"}}>
-          <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 130px 200px auto",gap:"10px",alignItems:"end"}}>
+        <div
+          style={{
+            borderTop: "1px solid #f3f4f6",
+            background: "#f9fafb",
+            padding: "12px 14px",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 130px 200px auto",
+              gap: "10px",
+              alignItems: "end",
+            }}
+          >
             <div>
-              <label style={{...iLabel,marginBottom:"3px"}}>Name</label>
-              <input placeholder="Account name" autoFocus value={name} onChange={e=>setName(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-                style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
+              <label style={{ ...iLabel, marginBottom: "3px" }}>Name</label>
+              <input
+                placeholder="Account name"
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                style={{
+                  ...iInput,
+                  fontSize: isMobile ? "15px" : "12px",
+                  padding: isMobile ? "11px 13px" : "7px 9px",
+                }}
+              />
             </div>
             <div>
-              <label style={{...iLabel,marginBottom:"3px"}}>Number</label>
-              <input placeholder="Number" value={num} onChange={e=>setNum(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-                style={{...iInput,fontSize:isMobile?"15px":"12px",padding:isMobile?"11px 13px":"7px 9px"}} />
+              <label style={{ ...iLabel, marginBottom: "3px" }}>Number</label>
+              <input
+                placeholder="Number"
+                value={num}
+                onChange={(e) => setNum(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                style={{
+                  ...iInput,
+                  fontSize: isMobile ? "15px" : "12px",
+                  padding: isMobile ? "11px 13px" : "7px 9px",
+                }}
+              />
             </div>
             <div>
-              <label style={{...iLabel,marginBottom:"3px"}}>Type</label>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px"}}>
-                <button onClick={()=>setSide("chime")}
-                  style={{fontSize:"12px",fontWeight:600,padding:"7px",borderRadius:"6px",cursor:"pointer",
-                    border:`1px solid ${side==="chime"?"#059669":"#e5e7eb"}`,
-                    background:side==="chime"?"#f0fdf4":"#fff",
-                    color:side==="chime"?"#059669":"#6b7280"}}>Chime</button>
-                <button onClick={()=>setSide("cashapp")}
-                  style={{fontSize:"12px",fontWeight:600,padding:"7px",borderRadius:"6px",cursor:"pointer",
-                    border:`1px solid ${side==="cashapp"?"#2563eb":"#e5e7eb"}`,
-                    background:side==="cashapp"?"#eff6ff":"#fff",
-                    color:side==="cashapp"?"#2563eb":"#6b7280"}}>Cashapp</button>
+              <label style={{ ...iLabel, marginBottom: "3px" }}>Type</label>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "4px",
+                }}
+              >
+                <button
+                  onClick={() => setSide("chime")}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    padding: "7px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    border: `1px solid ${side === "chime" ? "#059669" : "#e5e7eb"}`,
+                    background: side === "chime" ? "#f0fdf4" : "#fff",
+                    color: side === "chime" ? "#059669" : "#6b7280",
+                  }}
+                >
+                  Chime
+                </button>
+                <button
+                  onClick={() => setSide("cashapp")}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    padding: "7px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    border: `1px solid ${side === "cashapp" ? "#2563eb" : "#e5e7eb"}`,
+                    background: side === "cashapp" ? "#eff6ff" : "#fff",
+                    color: side === "cashapp" ? "#2563eb" : "#6b7280",
+                  }}
+                >
+                  Cashapp
+                </button>
               </div>
             </div>
-            <div style={{display:"flex",gap:"8px",paddingTop:isMobile?"0":"0"}}>
-              <button onClick={()=>{setShowForm(false);setName("");setNum("");setSide("chime");}}
-                style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"1px solid #e5e7eb",background:"#fff",color:"#6b7280",cursor:"pointer",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                paddingTop: isMobile ? "0" : "0",
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setName("");
+                  setNum("");
+                  setSide("chime");
+                }}
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  padding: isMobile ? "11px 16px" : "7px 16px",
+                  borderRadius: "7px",
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#6b7280",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flex: isMobile ? 1 : "none",
+                }}
+              >
                 Cancel
               </button>
-              <button onClick={handleAdd} disabled={saving||!name.trim()}
-                style={{fontSize:"13px",fontWeight:600,padding:isMobile?"11px 16px":"7px 16px",borderRadius:"7px",border:"none",cursor:saving||!name.trim()?"not-allowed":"pointer",
-                  background:saving||!name.trim()?"#9ca3af":"#111827",color:"#fff",whiteSpace:"nowrap",flex:isMobile?1:"none"}}>
+              <button
+                onClick={handleAdd}
+                disabled={saving || !name.trim()}
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  padding: isMobile ? "11px 16px" : "7px 16px",
+                  borderRadius: "7px",
+                  border: "none",
+                  cursor: saving || !name.trim() ? "not-allowed" : "pointer",
+                  background: saving || !name.trim() ? "#9ca3af" : "#111827",
+                  color: "#fff",
+                  whiteSpace: "nowrap",
+                  flex: isMobile ? 1 : "none",
+                }}
+              >
                 {saving ? "…" : "Save"}
               </button>
             </div>
@@ -753,82 +2114,118 @@ function StatusTable() {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [entries,        setEntries]        = useState({ chime:[], cashapp:[] });
-  const [records,        setRecords]        = useState([]);
+  const [entries, setEntries] = useState({ chime: [], cashapp: [] });
+  const [records, setRecords] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [loadingRecords, setLoadingRecords] = useState(true);
 
-  const [recDate,    setRecDate]    = useState(todayStr());
-  const [recChime,   setRecChime]   = useState("");
+  const [recDate, setRecDate] = useState(todayStr());
+  const [recChime, setRecChime] = useState("");
   const [recCashapp, setRecCashapp] = useState("");
-  const [recNote,    setRecNote]    = useState("");
-  const [savingRec,  setSavingRec]  = useState(false);
+  const [recNote, setRecNote] = useState("");
+  const [savingRec, setSavingRec] = useState(false);
 
   const [editRecord, setEditRecord] = useState(null);
   const [showRecord, setShowRecord] = useState(null);
-  
-  const [showFilter,  setShowFilter]  = useState(false);
+
+  const [showFilter, setShowFilter] = useState(false);
   const [filterFrom, setFilterFrom] = useState("");
-  const [filterTo,   setFilterTo]   = useState("");
+  const [filterTo, setFilterTo] = useState("");
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   const fetchEntries = useCallback(async () => {
     setLoadingEntries(true);
-    const { data } = await supabase.from("entries").select("*")
+    const { data } = await supabase
+      .from("entries")
+      .select("*")
       .eq("hidden", false)
       .order("created_at", { ascending: true });
-    if (data) setEntries({
-      chime:   data.filter(r=>r.side==="chime"),
-      cashapp: data.filter(r=>r.side==="cashapp"),
-    });
+    if (data)
+      setEntries({
+        chime: data.filter((r) => r.side === "chime"),
+        cashapp: data.filter((r) => r.side === "cashapp"),
+      });
     setLoadingEntries(false);
   }, []);
 
   const fetchRecords = useCallback(async () => {
     setLoadingRecords(true);
-    const { data } = await supabase.from("daily_records").select("*")
+    const { data } = await supabase
+      .from("daily_records")
+      .select("*")
       .eq("hidden", false)
       .order("date", { ascending: false });
     if (data) setRecords(data);
     setLoadingRecords(false);
   }, []);
 
-  useEffect(() => { fetchEntries(); fetchRecords(); }, [fetchEntries, fetchRecords]);
+  useEffect(() => {
+    fetchEntries();
+    fetchRecords();
+  }, [fetchEntries, fetchRecords]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const chimeTotal   = entries.chime.reduce((s,r)=>s+Number(r.amount),0);
-  const cashappTotal = entries.cashapp.reduce((s,r)=>s+Number(r.amount),0);
-  const dayTotal     = chimeTotal + cashappTotal;
-  const filteredRecords = records.filter(r => {
-  if (filterFrom && r.date < filterFrom) return false;
-  if (filterTo   && r.date > filterTo)   return false;
-  return true;
-});
-const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(r.cashapp_total),0);
+  const chimeTotal = entries.chime.reduce((s, r) => s + Number(r.amount), 0);
+  const cashappTotal = entries.cashapp.reduce(
+    (s, r) => s + Number(r.amount),
+    0,
+  );
+  const dayTotal = chimeTotal + cashappTotal;
+  const filteredRecords = records.filter((r) => {
+    if (filterFrom && r.date < filterFrom) return false;
+    if (filterTo && r.date > filterTo) return false;
+    return true;
+  });
+  const grandTotal = filteredRecords.reduce(
+    (s, r) => s + Number(r.chime_total) + Number(r.cashapp_total),
+    0,
+  );
 
   // ── Entry handlers ─────────────────────────────────────────────────────────
   async function handleAddEntry(payload) {
-    const { data } = await supabase.from("entries").insert([{...payload,hidden:false}]).select();
-    if (data) setEntries(prev=>({...prev,[payload.side]:[...prev[payload.side],data[0]]}));
+    const { data } = await supabase
+      .from("entries")
+      .insert([{ ...payload, hidden: false }])
+      .select();
+    if (data)
+      setEntries((prev) => ({
+        ...prev,
+        [payload.side]: [...prev[payload.side], data[0]],
+      }));
   }
 
   async function handleHideEntry(id) {
-    await supabase.from("entries").update({hidden:true}).eq("id",id);
-    setEntries(prev=>{
-      const chime   = prev.chime.filter(r=>r.id!==id).map((r,i)=>({...r,number:String(i+1)}));
-      const cashapp = prev.cashapp.filter(r=>r.id!==id).map((r,i)=>({...r,number:String(i+1)}));
-      chime.forEach(r=>supabase.from("entries").update({number:r.number}).eq("id",r.id));
-      cashapp.forEach(r=>supabase.from("entries").update({number:r.number}).eq("id",r.id));
+    await supabase.from("entries").update({ hidden: true }).eq("id", id);
+    setEntries((prev) => {
+      const chime = prev.chime
+        .filter((r) => r.id !== id)
+        .map((r, i) => ({ ...r, number: String(i + 1) }));
+      const cashapp = prev.cashapp
+        .filter((r) => r.id !== id)
+        .map((r, i) => ({ ...r, number: String(i + 1) }));
+      chime.forEach((r) =>
+        supabase.from("entries").update({ number: r.number }).eq("id", r.id),
+      );
+      cashapp.forEach((r) =>
+        supabase.from("entries").update({ number: r.number }).eq("id", r.id),
+      );
       return { chime, cashapp };
     });
   }
 
   async function handleEditEntry(id, changes) {
-    const { data } = await supabase.from("entries").update(changes).eq("id",id).select();
-    if (data) setEntries(prev=>({
-      chime:   prev.chime.map(r=>r.id===id?{...r,...data[0]}:r),
-      cashapp: prev.cashapp.map(r=>r.id===id?{...r,...data[0]}:r),
-    }));
+    const { data } = await supabase
+      .from("entries")
+      .update(changes)
+      .eq("id", id)
+      .select();
+    if (data)
+      setEntries((prev) => ({
+        chime: prev.chime.map((r) => (r.id === id ? { ...r, ...data[0] } : r)),
+        cashapp: prev.cashapp.map((r) =>
+          r.id === id ? { ...r, ...data[0] } : r,
+        ),
+      }));
   }
 
   // ── Record handlers ────────────────────────────────────────────────────────
@@ -836,35 +2233,68 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
     if (!recDate) return;
     setSavingRec(true);
     const payload = {
-      date:recDate, day_name:getDayFull(recDate),
-      chime_total:   parseFloat(recChime)||0,
-      cashapp_total: parseFloat(recCashapp)||0,
-      note:          recNote.trim()||null,
-      hidden:        false,
+      date: recDate,
+      day_name: getDayFull(recDate),
+      chime_total: parseFloat(recChime) || 0,
+      cashapp_total: parseFloat(recCashapp) || 0,
+      note: recNote.trim() || null,
+      hidden: false,
     };
-    const { data:recData, error } = await supabase.from("daily_records").insert([payload]).select();
-    if (error) { console.error(error); setSavingRec(false); return; }
+    const { data: recData, error } = await supabase
+      .from("daily_records")
+      .insert([payload])
+      .select();
+    if (error) {
+      console.error(error);
+      setSavingRec(false);
+      return;
+    }
 
     const record_id = recData[0].id;
     const allEntries = [
-      ...entries.chime.map((e,i)=>({record_id,side:"chime",  number:String(i+1),name:e.name,amount:Number(e.amount),chime_number:e.chime_number||null})),
-      ...entries.cashapp.map((e,i)=>({record_id,side:"cashapp",number:String(i+1),name:e.name,amount:Number(e.amount),chime_number:e.chime_number||null})),
+      ...entries.chime.map((e, i) => ({
+        record_id,
+        side: "chime",
+        number: String(i + 1),
+        name: e.name,
+        amount: Number(e.amount),
+        chime_number: e.chime_number || null,
+      })),
+      ...entries.cashapp.map((e, i) => ({
+        record_id,
+        side: "cashapp",
+        number: String(i + 1),
+        name: e.name,
+        amount: Number(e.amount),
+        chime_number: e.chime_number || null,
+      })),
     ];
-    if (allEntries.length > 0) await supabase.from("daily_snapshots").insert(allEntries);
+    if (allEntries.length > 0)
+      await supabase.from("daily_snapshots").insert(allEntries);
 
-    setRecords(prev=>[recData[0],...prev]);
-    setRecChime(""); setRecCashapp(""); setRecNote(""); setRecDate(todayStr());
+    setRecords((prev) => [recData[0], ...prev]);
+    setRecChime("");
+    setRecCashapp("");
+    setRecNote("");
+    setRecDate(todayStr());
     setSavingRec(false);
   }
 
   async function handleHideRecord(id) {
-    await supabase.from("daily_records").update({hidden:true}).eq("id",id);
-    setRecords(prev=>prev.filter(r=>r.id!==id));
+    await supabase.from("daily_records").update({ hidden: true }).eq("id", id);
+    setRecords((prev) => prev.filter((r) => r.id !== id));
   }
 
   async function handleEditRecord(id, changes) {
-    const { data } = await supabase.from("daily_records").update(changes).eq("id",id).select();
-    if (data) setRecords(prev=>prev.map(r=>r.id===id?{...r,...data[0]}:r));
+    const { data } = await supabase
+      .from("daily_records")
+      .update(changes)
+      .eq("id", id)
+      .select();
+    if (data)
+      setRecords((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, ...data[0] } : r)),
+      );
   }
 
   function fillLiveTotals() {
@@ -874,176 +2304,728 @@ const grandTotal = filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    
-    <div style={{minHeight:"100vh",backgroundColor:"#f8fafc"}}>
-      <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 20px 80px"}}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
+      <div
+        style={{
+          maxWidth: "960px",
+          margin: "0 auto",
+          padding: "40px 20px 80px",
+        }}
+      >
+        {editRecord && (
+          <RecordEditModal
+            record={editRecord}
+            onSave={handleEditRecord}
+            onClose={() => setEditRecord(null)}
+          />
+        )}
+        {showRecord && (
+          <SnapshotModal
+            record={showRecord}
+            onEdit={(r) => {
+              setShowRecord(null);
+              setEditRecord(r);
+            }}
+            onRecordUpdate={(id, changes) =>
+              setRecords((prev) =>
+                prev.map((r) => (r.id === id ? { ...r, ...changes } : r)),
+              )
+            }
+            onClose={() => setShowRecord(null)}
+          />
+        )}
 
-        {editRecord && <RecordEditModal record={editRecord} onSave={handleEditRecord} onClose={()=>setEditRecord(null)} />}
-        {showRecord  && <SnapshotModal  record={showRecord} onEdit={r=>{setShowRecord(null);setEditRecord(r);}} onRecordUpdate={(id,changes)=>setRecords(prev=>prev.map(r=>r.id===id?{...r,...changes}:r))} onClose={()=>setShowRecord(null)} />}
-      
         {/* Header */}
-        <div style={{marginBottom:"28px"}}>
-          <h1 style={{fontSize:"26px",fontWeight:600,color:"#111827",margin:0}}>Kaam</h1>
-          <p style={{fontSize:"14px",color:"#9ca3af",marginTop:"4px"}}>Payment tracker · daily records</p>
+        <div style={{ marginBottom: "28px" }}>
+          <h1
+            style={{
+              fontSize: "26px",
+              fontWeight: 600,
+              color: "#111827",
+              margin: 0,
+            }}
+          >
+            Kaam
+          </h1>
+          <p style={{ fontSize: "14px", color: "#9ca3af", marginTop: "4px" }}>
+            Payment tracker · daily records
+          </p>
         </div>
 
         {/* Stat cards */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px",marginBottom:"24px"}}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3,1fr)",
+            gap: "12px",
+            marginBottom: "24px",
+          }}
+        >
           {[
-            {label:"Today's total",value:fmt(dayTotal),    color:"#111827",bg:"#fff",border:"#f0f0f0"},
-            {label:"Chime",        value:fmt(chimeTotal),  color:"#065f46",bg:"#f0fdf4",border:"#bbf7d0"},
-            {label:"Cashapp",      value:fmt(cashappTotal),color:"#1e3a8a",bg:"#eff6ff",border:"#bfdbfe"},
-          ].map(s=>(
-            <div key={s.label} style={{background:s.bg,borderRadius:"12px",padding:"14px 18px",border:`1px solid ${s.border}`}}>
-              <p style={{fontSize:"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px"}}>{s.label}</p>
-              <p style={{fontSize:"22px",fontWeight:700,fontFamily:"monospace",color:s.color,margin:0}}>{s.value}</p>
+            {
+              label: "Today's total",
+              value: fmt(dayTotal),
+              color: "#111827",
+              bg: "#fff",
+              border: "#f0f0f0",
+            },
+            {
+              label: "Chime",
+              value: fmt(chimeTotal),
+              color: "#065f46",
+              bg: "#f0fdf4",
+              border: "#bbf7d0",
+            },
+            {
+              label: "Cashapp",
+              value: fmt(cashappTotal),
+              color: "#1e3a8a",
+              bg: "#eff6ff",
+              border: "#bfdbfe",
+            },
+          ].map((s) => (
+            <div
+              key={s.label}
+              style={{
+                background: s.bg,
+                borderRadius: "12px",
+                padding: "14px 18px",
+                border: `1px solid ${s.border}`,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: s.color,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  margin: "0 0 4px",
+                }}
+              >
+                {s.label}
+              </p>
+              <p
+                style={{
+                  fontSize: "22px",
+                  fontWeight: 700,
+                  fontFamily: "monospace",
+                  color: s.color,
+                  margin: 0,
+                }}
+              >
+                {s.value}
+              </p>
             </div>
           ))}
         </div>
 
         {/* Entry tables */}
-        <div style={{display:"flex",flexDirection:"column",gap:"16px",marginBottom:"28px"}}>
-          <EntryTable side="chime"   entries={entries.chime}   onAdd={handleAddEntry} onHide={handleHideEntry} onEdit={handleEditEntry} loading={loadingEntries} />
-          <EntryTable side="cashapp" entries={entries.cashapp} onAdd={handleAddEntry} onHide={handleHideEntry} onEdit={handleEditEntry} loading={loadingEntries} />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            marginBottom: "28px",
+          }}
+        >
+          <EntryTable
+            side="chime"
+            entries={entries.chime}
+            onAdd={handleAddEntry}
+            onHide={handleHideEntry}
+            onEdit={handleEditEntry}
+            loading={loadingEntries}
+          />
+          <EntryTable
+            side="cashapp"
+            entries={entries.cashapp}
+            onAdd={handleAddEntry}
+            onHide={handleHideEntry}
+            onEdit={handleEditEntry}
+            loading={loadingEntries}
+          />
         </div>
 
-        <div style={{borderTop:"1px solid #f3f4f6",marginBottom:"28px"}} />
+        <div style={{ borderTop: "1px solid #f3f4f6", marginBottom: "28px" }} />
 
         <StatusTable />
 
         {/* Save record */}
-        <p style={{fontSize:"14px",fontWeight:600,color:"#374151",marginBottom:"12px"}}>Save today's record</p>
-        <div style={{background:"#fff",border:"1px solid #f0f0f0",borderRadius:"12px",padding:"18px",marginBottom:"28px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"12px",marginBottom:"12px",alignItems:"end"}}>
-            <div><label style={iLabel}>Date</label><input type="date" value={recDate} onChange={e=>setRecDate(e.target.value)} style={iInput} /></div>
-            <div><label style={iLabel}>Day</label><input readOnly value={getDayFull(recDate)} style={{...iInput,color:"#9ca3af",backgroundColor:"#f3f4f6"}} /></div>
-            <div><label style={iLabel}>Chime ($)</label><input type="number" step="0.01" placeholder="0.00" value={recChime} onChange={e=>setRecChime(e.target.value)} style={{...iInput,color:"#065f46"}} /></div>
-            <div><label style={iLabel}>Cashapp ($)</label><input type="number" step="0.01" placeholder="0.00" value={recCashapp} onChange={e=>setRecCashapp(e.target.value)} style={{...iInput,color:"#1e3a8a"}} /></div>
-            <div style={{paddingTop:"18px"}}>
-              <button onClick={fillLiveTotals} style={{fontSize:"11px",color:"#059669",fontWeight:500,border:"1px solid #6ee7b7",borderRadius:"8px",padding:"9px 12px",background:"#f0fdf4",cursor:"pointer",whiteSpace:"nowrap"}}>Use live totals</button>
+        <p
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#374151",
+            marginBottom: "12px",
+          }}
+        >
+          Save today's record
+        </p>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #f0f0f0",
+            borderRadius: "12px",
+            padding: "18px",
+            marginBottom: "28px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
+              gap: "12px",
+              marginBottom: "12px",
+              alignItems: "end",
+            }}
+          >
+            <div>
+              <label style={iLabel}>Date</label>
+              <input
+                type="date"
+                value={recDate}
+                onChange={(e) => setRecDate(e.target.value)}
+                style={iInput}
+              />
+            </div>
+            <div>
+              <label style={iLabel}>Day</label>
+              <input
+                readOnly
+                value={getDayFull(recDate)}
+                style={{
+                  ...iInput,
+                  color: "#9ca3af",
+                  backgroundColor: "#f3f4f6",
+                }}
+              />
+            </div>
+            <div>
+              <label style={iLabel}>Chime ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={recChime}
+                onChange={(e) => setRecChime(e.target.value)}
+                style={{ ...iInput, color: "#065f46" }}
+              />
+            </div>
+            <div>
+              <label style={iLabel}>Cashapp ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={recCashapp}
+                onChange={(e) => setRecCashapp(e.target.value)}
+                style={{ ...iInput, color: "#1e3a8a" }}
+              />
+            </div>
+            <div style={{ paddingTop: "18px" }}>
+              <button
+                onClick={fillLiveTotals}
+                style={{
+                  fontSize: "11px",
+                  color: "#059669",
+                  fontWeight: 500,
+                  border: "1px solid #6ee7b7",
+                  borderRadius: "8px",
+                  padding: "9px 12px",
+                  background: "#f0fdf4",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Use live totals
+              </button>
             </div>
           </div>
-          <div style={{display:"flex",gap:"12px",alignItems:"flex-end"}}>
-            <div style={{flex:1}}>
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
+            <div style={{ flex: 1 }}>
               <label style={iLabel}>Note (optional)</label>
-              <input type="text" placeholder="e.g. slow day, holiday…" value={recNote} onChange={e=>setRecNote(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSaveRecord()} style={iInput} />
+              <input
+                type="text"
+                placeholder="e.g. slow day, holiday…"
+                value={recNote}
+                onChange={(e) => setRecNote(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveRecord()}
+                style={iInput}
+              />
             </div>
-            <button onClick={handleSaveRecord} disabled={savingRec||!recDate} style={{fontSize:"13px",fontWeight:600,padding:"9px 24px",borderRadius:"8px",border:"none",cursor:"pointer",background:savingRec?"#9ca3af":"#059669",color:"#fff",whiteSpace:"nowrap",opacity:!recDate?0.4:1}}>
-              {savingRec?"Saving…":"Save record"}
+            <button
+              onClick={handleSaveRecord}
+              disabled={savingRec || !recDate}
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "9px 24px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                background: savingRec ? "#9ca3af" : "#059669",
+                color: "#fff",
+                whiteSpace: "nowrap",
+                opacity: !recDate ? 0.4 : 1,
+              }}
+            >
+              {savingRec ? "Saving…" : "Save record"}
             </button>
           </div>
         </div>
 
         {/* History */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"12px"}}>
-  <p style={{fontSize:"13px",fontWeight:600,color:"#059669",textTransform:"uppercase",letterSpacing:"0.05em",margin:0}}>History</p>
-  <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-    {records.length>0 && (
-      <span style={{fontSize:"12px",color:"#059669",background:"#f0fdf4",borderRadius:"6px",padding:"4px 10px",fontFamily:"monospace",border:"1px solid #bbf7d0"}}>
-        Grand total: {fmt(grandTotal)}
-      </span>
-    )}
-    <button onClick={()=>setShowFilter(v=>!v)} style={{
-      fontSize:"12px",fontWeight:600,padding:"5px 14px",
-      borderRadius:"7px",border:"1px solid #6ee7b7",
-      background: showFilter?"#059669":"#f0fdf4",
-      color: showFilter?"#fff":"#059669",cursor:"pointer",
-    }}>
-      {showFilter ? "Close filter" : "Filter"}
-    </button>
-  </div>
-</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "12px",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "#059669",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              margin: 0,
+            }}
+          >
+            History
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {records.length > 0 && (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#059669",
+                  background: "#f0fdf4",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  fontFamily: "monospace",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                Grand total: {fmt(grandTotal)}
+              </span>
+            )}
+            <button
+              onClick={() => setShowFilter((v) => !v)}
+              style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                padding: "5px 14px",
+                borderRadius: "7px",
+                border: "1px solid #6ee7b7",
+                background: showFilter ? "#059669" : "#f0fdf4",
+                color: showFilter ? "#fff" : "#059669",
+                cursor: "pointer",
+              }}
+            >
+              {showFilter ? "Close filter" : "Filter"}
+            </button>
+          </div>
+        </div>
 
-{/* Filter popup */}
-{showFilter && (
-  <div style={{background:"#fff",border:"1px solid #6ee7b7",borderRadius:"12px",padding:"16px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
-    <p style={{fontSize:"12px",fontWeight:600,color:"#059669",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.05em"}}>Filter by date</p>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
-      <div>
-        <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>From</label>
-        <input type="date" value={filterFrom} onChange={e=>setFilterFrom(e.target.value)}
-          style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#f9fafb",color:"#374151",outline:"none",boxSizing:"border-box",cursor:"pointer",WebkitAppearance:"auto"}} />
-      </div>
-      <div>
-        <label style={{display:"block",fontSize:"11px",color:"#9ca3af",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"5px"}}>To</label>
-        <input type="date" value={filterTo} onChange={e=>setFilterTo(e.target.value)}
-          style={{width:"100%",fontSize:"13px",padding:"8px 10px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#f9fafb",color:"#374151",outline:"none",boxSizing:"border-box"}} />
-      </div>
-    </div>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-      <span style={{fontSize:"12px",color:"#6b7280"}}>
-        {filteredRecords.length} of {records.length} records
-        {(filterFrom||filterTo) && ` · ${fmt(filteredRecords.reduce((s,r)=>s+Number(r.chime_total)+Number(r.cashapp_total),0))}`}
-      </span>
-      <div style={{display:"flex",gap:"8px"}}>
-        {(filterFrom||filterTo) && (
-          <button onClick={()=>{setFilterFrom("");setFilterTo("");}}
-            style={{fontSize:"12px",padding:"6px 14px",border:"1px solid #e5e7eb",borderRadius:"7px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>
-            Clear
-          </button>
+        {/* Filter popup */}
+        {showFilter && (
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #6ee7b7",
+              borderRadius: "12px",
+              padding: "16px",
+              marginBottom: "16px",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#059669",
+                margin: "0 0 12px",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Filter by date
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "5px",
+                  }}
+                >
+                  From
+                </label>
+                <input
+                  type="date"
+                  value={filterFrom}
+                  onChange={(e) => setFilterFrom(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "7px",
+                    background: "#f9fafb",
+                    color: "#374151",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    cursor: "pointer",
+                    WebkitAppearance: "auto",
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "5px",
+                  }}
+                >
+                  To
+                </label>
+                <input
+                  type="date"
+                  value={filterTo}
+                  onChange={(e) => setFilterTo(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "7px",
+                    background: "#f9fafb",
+                    color: "#374151",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontSize: "12px", color: "#6b7280" }}>
+                {filteredRecords.length} of {records.length} records
+                {(filterFrom || filterTo) &&
+                  ` · ${fmt(filteredRecords.reduce((s, r) => s + Number(r.chime_total) + Number(r.cashapp_total), 0))}`}
+              </span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {(filterFrom || filterTo) && (
+                  <button
+                    onClick={() => {
+                      setFilterFrom("");
+                      setFilterTo("");
+                    }}
+                    style={{
+                      fontSize: "12px",
+                      padding: "6px 14px",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "7px",
+                      background: "#fff",
+                      color: "#6b7280",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowFilter(false)}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    padding: "6px 14px",
+                    border: "none",
+                    borderRadius: "7px",
+                    background: "#059669",
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
         )}
-        <button onClick={()=>setShowFilter(false)}
-          style={{fontSize:"12px",fontWeight:600,padding:"6px 14px",border:"none",borderRadius:"7px",background:"#059669",color:"#fff",cursor:"pointer"}}>
-          Apply
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
         {loadingRecords ? (
-          <p style={{textAlign:"center",fontSize:"14px",color:"#9ca3af",padding:"40px 0"}}>Loading…</p>
-        ) : records.length===0 ? (
-          <div style={{textAlign:"center",fontSize:"14px",color:"#9ca3af",padding:"40px 0",border:"1px solid #f3f4f6",borderRadius:"12px",background:"#fff"}}>No records yet — save one above.</div>
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "14px",
+              color: "#9ca3af",
+              padding: "40px 0",
+            }}
+          >
+            Loading…
+          </p>
+        ) : records.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "14px",
+              color: "#9ca3af",
+              padding: "40px 0",
+              border: "1px solid #f3f4f6",
+              borderRadius: "12px",
+              background: "#fff",
+            }}
+          >
+            No records yet — save one above.
+          </div>
         ) : (
-          <div style={{background:"#fff",border:"2px solid #6ee7b7",borderRadius:"12px",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
+          <div
+            style={{
+              background: "#fff",
+              border: "2px solid #6ee7b7",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "13px",
+              }}
+            >
               <thead>
-                <tr style={{borderBottom:"1px solid #d1fae5",background:"#f0fdf4"}}>
-                  {["Date","Day","Chime","Cashapp","Total","Note",""].map((h,i)=>(
-                    <th key={i} style={{
-                      textAlign:[2,3,4].includes(i)?"right":"left",
-                      fontSize:"10px",color:"#059669",fontWeight:600,
-                      textTransform:"uppercase",letterSpacing:"0.05em",
-                      padding:"10px 12px",whiteSpace:"nowrap",
-                    }}>{h}</th>
-                  ))}
+                <tr
+                  style={{
+                    borderBottom: "1px solid #d1fae5",
+                    background: "#f0fdf4",
+                  }}
+                >
+                  {["Date", "Day", "Chime", "Cashapp", "Total", "Note", ""].map(
+                    (h, i) => (
+                      <th
+                        key={i}
+                        style={{
+                          textAlign: [2, 3, 4].includes(i) ? "right" : "left",
+                          fontSize: "10px",
+                          color: "#059669",
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "10px 12px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map(r=>{
-                  const short  = getDayShort(r.date);
-                  const pill   = DAY_PILL[short]??"bg-gray-100 text-gray-600";
-                  const rowTot = Number(r.chime_total)+Number(r.cashapp_total);
+                {filteredRecords.map((r) => {
+                  const short = getDayShort(r.date);
+                  const pill = DAY_PILL[short] ?? "bg-gray-100 text-gray-600";
+                  const rowTot =
+                    Number(r.chime_total) + Number(r.cashapp_total);
                   return (
-                    <tr key={r.id} style={{borderBottom:"1px solid #f0fdf4",transition:"background 0.1s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="";}}
+                    <tr
+                      key={r.id}
+                      style={{
+                        borderBottom: "1px solid #f0fdf4",
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "#f0fdf4";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "";
+                      }}
                     >
-                      <td style={{padding:"10px 12px",fontFamily:"monospace",fontSize:"12px",color:"#4b5563",whiteSpace:"nowrap"}}>{r.date}</td>
-                      <td style={{padding:"10px 12px"}}><span className={`text-xs font-medium px-2 py-0.5 rounded-full ${pill}`}>{r.day_name}</span></td>
-                      <td style={{padding:"10px 12px",textAlign:"right",fontFamily:"monospace",fontSize:"12px",color:"#065f46",fontWeight:600}}>{fmt(r.chime_total)}</td>
-                      <td style={{padding:"10px 12px",textAlign:"right",fontFamily:"monospace",fontSize:"12px",color:"#1e3a8a",fontWeight:600}}>{fmt(r.cashapp_total)}</td>
-                      <td style={{padding:"10px 12px",textAlign:"right",fontFamily:"monospace",fontSize:"12px",fontWeight:700,color:"#111827"}}>{fmt(rowTot)}</td>
-                      <td style={{padding:"10px 12px",fontSize:"12px",color:"#9ca3af",maxWidth:"120px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.note??"—"}</td>
-                      <td style={{padding:"10px 8px"}}>
-                        <div className="ra2" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:"4px",transition:"opacity 0.15s"}}>
-                          <button onClick={()=>setShowRecord(r)}
-                            style={{fontSize:"11px",fontWeight:600,padding:"3px 10px",borderRadius:"6px",border:"1px solid #6ee7b7",background:"#f0fdf4",color:"#059669",cursor:"pointer",whiteSpace:"nowrap"}}
-                            onMouseEnter={e=>e.currentTarget.style.background="#dcfce7"}
-                            onMouseLeave={e=>e.currentTarget.style.background="#f0fdf4"}>Show</button>
-                          <button onClick={()=>setEditRecord(r)}
-                            style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#9ca3af",borderRadius:"4px",display:"flex",alignItems:"center"}}
-                            onMouseEnter={e=>{e.currentTarget.style.color="#059669";e.currentTarget.style.background="#f0fdf4";}}
-                            onMouseLeave={e=>{e.currentTarget.style.color="#9ca3af";e.currentTarget.style.background="none";}}>
-                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 0110 16H8v-2a2 2 0 01.586-1.414z"/>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          color: "#4b5563",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {r.date}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${pill}`}
+                        >
+                          {r.day_name}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          textAlign: "right",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          color: "#065f46",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {fmt(r.chime_total)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          textAlign: "right",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          color: "#1e3a8a",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {fmt(r.cashapp_total)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          textAlign: "right",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          color: "#111827",
+                        }}
+                      >
+                        {fmt(rowTot)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: "12px",
+                          color: "#9ca3af",
+                          maxWidth: "120px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {r.note ?? "—"}
+                      </td>
+                      <td style={{ padding: "10px 8px" }}>
+                        <div
+                          className="ra2"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
+                            gap: "4px",
+                            transition: "opacity 0.15s",
+                          }}
+                        >
+                          <button
+                            onClick={() => setShowRecord(r)}
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              padding: "3px 10px",
+                              borderRadius: "6px",
+                              border: "1px solid #6ee7b7",
+                              background: "#f0fdf4",
+                              color: "#059669",
+                              cursor: "pointer",
+                              whiteSpace: "nowrap",
+                            }}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.background = "#dcfce7")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.background = "#f0fdf4")
+                            }
+                          >
+                            Show
+                          </button>
+                          <button
+                            onClick={() => setEditRecord(r)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "4px",
+                              color: "#9ca3af",
+                              borderRadius: "4px",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "#059669";
+                              e.currentTarget.style.background = "#f0fdf4";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "#9ca3af";
+                              e.currentTarget.style.background = "none";
+                            }}
+                          >
+                            <svg
+                              width="13"
+                              height="13"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 0110 16H8v-2a2 2 0 01.586-1.414z"
+                              />
                             </svg>
                           </button>
-                          <button onClick={()=>handleHideRecord(r.id)}
-                            style={{background:"none",border:"none",cursor:"pointer",padding:"4px",color:"#d1d5db",borderRadius:"4px",fontSize:"15px",lineHeight:1}}
-                            onMouseEnter={e=>{e.currentTarget.style.color="#f87171";e.currentTarget.style.background="#fef2f2";}}
-                            onMouseLeave={e=>{e.currentTarget.style.color="#d1d5db";e.currentTarget.style.background="none";}}>×</button>
+                          <button
+                            onClick={() => handleHideRecord(r.id)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "4px",
+                              color: "#d1d5db",
+                              borderRadius: "4px",
+                              fontSize: "15px",
+                              lineHeight: 1,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "#f87171";
+                              e.currentTarget.style.background = "#fef2f2";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "#d1d5db";
+                              e.currentTarget.style.background = "none";
+                            }}
+                          >
+                            ×
+                          </button>
                         </div>
                       </td>
                     </tr>
