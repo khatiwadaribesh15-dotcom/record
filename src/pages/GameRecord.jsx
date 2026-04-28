@@ -55,6 +55,19 @@ const tdStyle = (extra={}) => ({
   padding:"10px 12px", borderBottom:"1px solid #f9fafb", ...extra,
 });
 
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return isMobile;
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function Modal({ onClose, children, maxWidth="640px" }) {
   useEffect(() => {
@@ -185,6 +198,7 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
   const [date,    setDate]    = useState(session.date ?? "");
   const [note,    setNote]    = useState(session.note ?? "");
   const [saving,  setSaving]  = useState(false);
+  const isMobile = useIsMobile();
   const [players, setPlayers] = useState(
     existingPlayers.map(p=>({
       id:             p.id,
@@ -253,18 +267,18 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
       </div>
 
       {/* Date + note */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr",gap:"12px",marginBottom:"18px"}}>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr 1fr":"1fr 1fr 2fr",gap:isMobile?"10px":"12px",marginBottom:"18px"}}>
         <div>
           <label style={iLabel}>Date</label>
-          <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={iInput} />
+          <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} />
         </div>
         <div>
           <label style={iLabel}>Day</label>
-          <input readOnly value={getDayFull(date)} style={{...iInput,color:"#9ca3af",background:"#f3f4f6"}} />
+          <input readOnly value={getDayFull(date)} style={{...iInput,color:"#9ca3af",background:"#f3f4f6",fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} />
         </div>
-        <div>
+        <div style={{gridColumn:isMobile?"span 2":"auto"}}>
           <label style={iLabel}>Shift person (optional)</label>
-          <input type="text" value={note} onChange={e=>setNote(e.target.value)} style={iInput} />
+          <input type="text" value={note} onChange={e=>setNote(e.target.value)} style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} />
         </div>
       </div>
 
@@ -274,6 +288,53 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
         <button onClick={addPlayer} style={{fontSize:"12px",fontWeight:600,padding:"4px 12px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}> Add Game Name</button>
       </div>
 
+      {isMobile ? (
+        <div style={{display:"flex",flexDirection:"column",gap:"10px",marginBottom:"16px"}}>
+          {players.map((p,i)=>{
+            const net = calcNet(p);
+            return (
+              <div key={i} style={{border:"1px solid #f3f4f6",borderRadius:"10px",padding:"12px",background:"#fafafa"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
+                  <span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"4px 8px",flexShrink:0}}>#{p.number}</span>
+                  <input placeholder="Game name" value={p.name} onChange={e=>update(i,"name",e.target.value)}
+                    style={{...iInput,fontSize:"15px",padding:"10px 12px",flex:1}} />
+                  {players.length>1 && (
+                    <button onClick={()=>removePlayer(i)}
+                      style={{background:"#fff",border:"1px solid #fecaca",cursor:"pointer",color:"#ef4444",fontSize:"18px",lineHeight:1,padding:"6px 11px",borderRadius:"7px",flexShrink:0}}>×</button>
+                  )}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"8px"}}>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Previous</label>
+                    <input type="number" inputMode="decimal" placeholder="0" value={p.previous_point} onChange={e=>update(i,"previous_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px"}} />
+                  </div>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Current</label>
+                    <input type="number" inputMode="decimal" placeholder="0" value={p.current_point} onChange={e=>update(i,"current_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px"}} />
+                  </div>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",alignItems:"end"}}>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Added</label>
+                    <input type="number" inputMode="decimal" placeholder="—" value={p.added_point} onChange={e=>update(i,"added_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px",color:"#059669"}} />
+                  </div>
+                  <div style={{background:"#faf5ff",border:"1px solid #e9d5ff",borderRadius:"7px",padding:"10px 12px",textAlign:"right"}}>
+                    <div style={{fontSize:"10px",color:"#7c3aed",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"2px"}}>Net</div>
+                    <div style={{fontFamily:"monospace",fontSize:"16px",fontWeight:700,color:net==null?"#9ca3af":net>0?"#7c3aed":"#dc2626"}}>{net!=null?net:"—"}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{background:"#faf5ff",border:"1px solid #e9d5ff",borderRadius:"10px",padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:"13px",fontWeight:600,color:"#7c3aed"}}>Total Net</span>
+            <span style={{fontFamily:"monospace",fontSize:"17px",fontWeight:700,color:"#7c3aed"}}>{totalNet}</span>
+          </div>
+        </div>
+      ) : (
       <div style={{overflowX:"auto",marginBottom:"16px"}}>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
           <thead>
@@ -337,15 +398,16 @@ function EditSessionModal({ session, existingPlayers, onSave, onClose }) {
           </tfoot>
         </table>
       </div>
+      )}
 
       <p style={{fontSize:"11px",color:"#9ca3af",marginBottom:"16px",background:"#f9fafb",padding:"8px 12px",borderRadius:"7px",border:"1px solid #f3f4f6"}}>
         Net = Previous − Current + Added
       </p>
 
       <div style={{display:"flex",gap:"8px"}}>
-        <button onClick={onClose} style={{flex:1,fontSize:"13px",padding:"10px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+        <button onClick={onClose} style={{flex:1,fontSize:isMobile?"14px":"13px",padding:isMobile?"12px":"10px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
         <button onClick={handleSave} disabled={saving||!date||!players.some(p=>p.name.trim())}
-          style={{flex:2,fontSize:"13px",fontWeight:600,padding:"10px",borderRadius:"8px",border:"none",
+          style={{flex:2,fontSize:isMobile?"14px":"13px",fontWeight:600,padding:isMobile?"12px":"10px",borderRadius:"8px",border:"none",
             background:saving?"#9ca3af":"#7c3aed",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>
           {saving?"Saving…":"Save changes"}
         </button>
@@ -359,6 +421,7 @@ function NewSessionModal({ lastSession, onSave, onClose }) {
   const [date,   setDate]   = useState(todayStr());
   const [note,   setNote]   = useState("");
   const [saving, setSaving] = useState(false);
+  const isMobile = useIsMobile();
 
   const initPlayers = lastSession?.players?.length
     ? lastSession.players.map((p,i)=>({
@@ -419,15 +482,62 @@ function NewSessionModal({ lastSession, onSave, onClose }) {
         </h2>
         <button onClick={onClose} style={{fontSize:"22px",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>×</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr",gap:"12px",marginBottom:"18px"}}>
-        <div><label style={iLabel}>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={iInput} /></div>
-        <div><label style={iLabel}>Day</label><input readOnly value={getDayFull(date)} style={{...iInput,color:"#9ca3af",background:"#f3f4f6"}} /></div>
-        <div><label style={iLabel}>Shift person (optional)</label><input type="text" placeholder="e.g. Name of the person" value={note} onChange={e=>setNote(e.target.value)} style={iInput} /></div>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr 1fr":"1fr 1fr 2fr",gap:isMobile?"10px":"12px",marginBottom:"18px"}}>
+        <div><label style={iLabel}>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} /></div>
+        <div><label style={iLabel}>Day</label><input readOnly value={getDayFull(date)} style={{...iInput,color:"#9ca3af",background:"#f3f4f6",fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} /></div>
+        <div style={{gridColumn:isMobile?"span 2":"auto"}}><label style={iLabel}>Shift person (optional)</label><input type="text" placeholder="e.g. Name of the person" value={note} onChange={e=>setNote(e.target.value)} style={{...iInput,fontSize:isMobile?"15px":"13px",padding:isMobile?"11px 13px":"8px 10px"}} /></div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"10px"}}>
         <p style={{fontSize:"12px",fontWeight:600,color:"#374151",textTransform:"uppercase",letterSpacing:"0.05em",margin:0}}>Games</p>
         <button onClick={addPlayer} style={{fontSize:"12px",fontWeight:600,padding:"4px 12px",borderRadius:"6px",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#374151",cursor:"pointer"}}>+ Add Game Name</button>
       </div>
+      {isMobile ? (
+        <div style={{display:"flex",flexDirection:"column",gap:"10px",marginBottom:"16px"}}>
+          {players.map((p,i)=>{
+            const net=calcNet(p);
+            return (
+              <div key={i} style={{border:"1px solid #f3f4f6",borderRadius:"10px",padding:"12px",background:"#fafafa"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
+                  <span style={{background:"#f3f4f6",color:"#6b7280",fontSize:"11px",fontFamily:"monospace",borderRadius:"4px",padding:"4px 8px",flexShrink:0}}>#{p.number}</span>
+                  <input placeholder="Game name" value={p.name} onChange={e=>update(i,"name",e.target.value)}
+                    style={{...iInput,fontSize:"15px",padding:"10px 12px",flex:1}} />
+                  {players.length>1&&(
+                    <button onClick={()=>removePlayer(i)}
+                      style={{background:"#fff",border:"1px solid #fecaca",cursor:"pointer",color:"#ef4444",fontSize:"18px",lineHeight:1,padding:"6px 11px",borderRadius:"7px",flexShrink:0}}>×</button>
+                  )}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"8px"}}>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Previous</label>
+                    <input type="number" inputMode="decimal" placeholder="0" value={p.previous_point} onChange={e=>update(i,"previous_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px"}} />
+                  </div>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Current</label>
+                    <input type="number" inputMode="decimal" placeholder="0" value={p.current_point} onChange={e=>update(i,"current_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px"}} />
+                  </div>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",alignItems:"end"}}>
+                  <div>
+                    <label style={{...iLabel,marginBottom:"3px"}}>Added</label>
+                    <input type="number" inputMode="decimal" placeholder="—" value={p.added_point} onChange={e=>update(i,"added_point",e.target.value)}
+                      style={{...iInput,fontSize:"15px",padding:"10px 12px",color:"#059669"}} />
+                  </div>
+                  <div style={{background:"#faf5ff",border:"1px solid #e9d5ff",borderRadius:"7px",padding:"10px 12px",textAlign:"right"}}>
+                    <div style={{fontSize:"10px",color:"#7c3aed",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:"2px"}}>Net</div>
+                    <div style={{fontFamily:"monospace",fontSize:"16px",fontWeight:700,color:net==null?"#9ca3af":net>0?"#7c3aed":"#dc2626"}}>{net!=null?net:"—"}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{background:"#faf5ff",border:"1px solid #e9d5ff",borderRadius:"10px",padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:"13px",fontWeight:600,color:"#7c3aed"}}>Total Net</span>
+            <span style={{fontFamily:"monospace",fontSize:"17px",fontWeight:700,color:"#7c3aed"}}>{totalNet}</span>
+          </div>
+        </div>
+      ) : (
       <div style={{overflowX:"auto",marginBottom:"16px"}}>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
           <thead>
@@ -470,10 +580,11 @@ function NewSessionModal({ lastSession, onSave, onClose }) {
           </tfoot>
         </table>
       </div>
+      )}
       <div style={{display:"flex",gap:"8px"}}>
-        <button onClick={onClose} style={{flex:1,fontSize:"13px",padding:"10px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
+        <button onClick={onClose} style={{flex:1,fontSize:isMobile?"14px":"13px",padding:isMobile?"12px":"10px",border:"1px solid #e5e7eb",borderRadius:"8px",background:"#fff",color:"#6b7280",cursor:"pointer"}}>Cancel</button>
         <button onClick={handleSave} disabled={saving||!date||!players.some(p=>p.name.trim())}
-          style={{flex:2,fontSize:"13px",fontWeight:600,padding:"10px",borderRadius:"8px",border:"none",background:saving?"#9ca3af":"#7c3aed",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>
+          style={{flex:2,fontSize:isMobile?"14px":"13px",fontWeight:600,padding:isMobile?"12px":"10px",borderRadius:"8px",border:"none",background:saving?"#9ca3af":"#7c3aed",color:"#fff",cursor:saving?"not-allowed":"pointer"}}>
           {saving?"Saving…":"Save session"}
         </button>
       </div>
@@ -493,6 +604,7 @@ export default function GameRecord() {
   const [showFilter, setShowFilter] = useState(false);
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo,   setFilterTo]   = useState("");
+  const isMobile = useIsMobile();
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -540,12 +652,12 @@ export default function GameRecord() {
         {delSession   && <ConfirmModal       session={delSession}  onConfirm={handleDelete} onClose={()=>setDelSession(null)} />}
 
         {/* Header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"28px"}}>
-          <div>
-            <h1 style={{fontSize:"26px",fontWeight:700,color:"#111827",margin:0}}>Game Records</h1>
+        <div style={{display:"flex",flexDirection:isMobile?"column":"row",alignItems:isMobile?"stretch":"center",justifyContent:"space-between",marginBottom:"28px",gap:isMobile?"14px":"0"}}>
+          <div style={{textAlign:isMobile?"left":"left"}}>
+            <h1 style={{fontSize:isMobile?"22px":"26px",fontWeight:700,color:"#111827",margin:0}}>Game Records</h1>
             <p style={{fontSize:"14px",color:"#9ca3af",marginTop:"4px"}}>Point tracker · session by session</p>
           </div>
-          <button onClick={()=>setShowNew(true)} style={{fontSize:"13px",fontWeight:600,padding:"10px 22px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7c3aed",color:"#fff"}}
+          <button onClick={()=>setShowNew(true)} style={{fontSize:isMobile?"14px":"13px",fontWeight:600,padding:isMobile?"12px 22px":"10px 22px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7c3aed",color:"#fff",width:isMobile?"100%":"auto"}}
             onMouseEnter={e=>e.currentTarget.style.background="#6d28d9"}
             onMouseLeave={e=>e.currentTarget.style.background="#7c3aed"}>
             Add New Record
@@ -553,15 +665,15 @@ export default function GameRecord() {
         </div>
 
         {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px",marginBottom:"24px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:isMobile?"8px":"12px",marginBottom:"24px"}}>
           {[
             {label:"Total sessions",  value:filtered.length ,color:"#374151",bg:"#fff", border:"#f0f0f0",                                                                      color:"#374151",bg:"#fff",    border:"#f0f0f0"},
             {label:"Total net pts",   value:filtered.reduce((s,g)=>s+num(g.total_net),0),color:"#7c3aed",bg:"#faf5ff", border:"#e9d5ff"},
             {label:"Avg per session", value:filtered.length?Math.round(filtered.reduce((s,g)=>s+num(g.total_net),0)/filtered.length):0, color:"#1e40af",bg:"#eff6ff",border:"#bfdbfe"},
           ].map(s=>(
-            <div key={s.label} style={{background:s.bg,borderRadius:"12px",padding:"14px 18px",border:`1px solid ${s.border}`}}>
-              <p style={{fontSize:"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px",opacity:0.6}}>{s.label}</p>
-              <p style={{fontSize:"22px",fontWeight:700,fontFamily:"monospace",color:s.color,margin:0}}>{s.value}</p>
+            <div key={s.label} style={{background:s.bg,borderRadius:"12px",padding:isMobile?"10px 12px":"14px 18px",border:`1px solid ${s.border}`}}>
+              <p style={{fontSize:isMobile?"9px":"11px",color:s.color,textTransform:"uppercase",letterSpacing:"0.05em",margin:"0 0 4px",opacity:0.6}}>{s.label}</p>
+              <p style={{fontSize:isMobile?"16px":"22px",fontWeight:700,fontFamily:"monospace",color:s.color,margin:0}}>{s.value}</p>
             </div>
           ))}
         </div>
@@ -611,7 +723,7 @@ export default function GameRecord() {
               return (
                 <div key={g.id} style={{background:"#fff",border:"1px solid #f0f0f0",borderRadius:"12px",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
                   {/* Session header */}
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:"1px solid #f9f0ff",background:"#fdfbff"}}>
+                  <div style={{display:"flex",flexDirection:isMobile?"column":"row",alignItems:isMobile?"stretch":"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:"1px solid #f9f0ff",background:"#fdfbff",gap:isMobile?"10px":"0"}}>
                     <div style={{display:"flex",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
                       <span style={{fontSize:"12px",fontWeight:700,color:"#7c3aed",background:"#f5f3ff",border:"1px solid #e9d5ff",borderRadius:"6px",padding:"3px 10px"}}>
                         Session #{g.session_number}
@@ -622,17 +734,17 @@ export default function GameRecord() {
                     </div>
 
                     {/* Action buttons */}
-                    <div style={{display:"flex",gap:"6px",marginLeft:"12px",flexShrink:0}}>
+                    <div style={{display:"flex",gap:"6px",marginLeft:isMobile?0:"12px",flexShrink:0}}>
                       <button onClick={()=>setShowDetail(g)}
-                        style={{fontSize:"12px",fontWeight:600,padding:"5px 12px",borderRadius:"7px",border:"1px solid #e9d5ff",background:"#f5f3ff",color:"#7c3aed",cursor:"pointer"}}
+                        style={{fontSize:isMobile?"13px":"12px",fontWeight:600,padding:isMobile?"9px 12px":"5px 12px",borderRadius:"7px",border:"1px solid #e9d5ff",background:"#f5f3ff",color:"#7c3aed",cursor:"pointer",flex:isMobile?1:"none"}}
                         onMouseEnter={e=>e.currentTarget.style.background="#ede9fe"}
                         onMouseLeave={e=>e.currentTarget.style.background="#f5f3ff"}>Show</button>
                       <button onClick={()=>setEditSession(g)}
-                        style={{fontSize:"12px",fontWeight:600,padding:"5px 12px",borderRadius:"7px",border:"1px solid #bfdbfe",background:"#eff6ff",color:"#1d4ed8",cursor:"pointer"}}
+                        style={{fontSize:isMobile?"13px":"12px",fontWeight:600,padding:isMobile?"9px 12px":"5px 12px",borderRadius:"7px",border:"1px solid #bfdbfe",background:"#eff6ff",color:"#1d4ed8",cursor:"pointer",flex:isMobile?1:"none"}}
                         onMouseEnter={e=>e.currentTarget.style.background="#dbeafe"}
                         onMouseLeave={e=>e.currentTarget.style.background="#eff6ff"}>Edit</button>
                       <button onClick={()=>setDelSession(g)}
-                        style={{fontSize:"12px",fontWeight:600,padding:"5px 12px",borderRadius:"7px",border:"1px solid #fecaca",background:"#fef2f2",color:"#dc2626",cursor:"pointer"}}
+                        style={{fontSize:isMobile?"13px":"12px",fontWeight:600,padding:isMobile?"9px 12px":"5px 12px",borderRadius:"7px",border:"1px solid #fecaca",background:"#fef2f2",color:"#dc2626",cursor:"pointer",flex:isMobile?1:"none"}}
                         onMouseEnter={e=>e.currentTarget.style.background="#fee2e2"}
                         onMouseLeave={e=>e.currentTarget.style.background="#fef2f2"}>Delete</button>
                     </div>
