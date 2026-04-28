@@ -577,6 +577,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
             <th style={{ ...th, width: "36px" }}>#</th>
             <th style={th}>Name</th>
             <th style={{ ...th, width: "100px" }}>{numLabel}</th>
+            <th style={{ ...th, textAlign: "center", width: "80px" }}>Black Screen</th>
             <th style={{ ...th, textAlign: "right", width: "80px" }}>Amount</th>
             <th style={{ ...th, width: "120px" }} />
           </tr>
@@ -608,6 +609,13 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
                 }}
               >
                 {s.chime_number || "—"}
+              </td>
+              <td style={{ ...td, textAlign: "center" }}>
+                {s.st_blackscreen ? (
+                  <span style={{ fontSize: "10px", fontWeight: 600, padding: "2px 7px", borderRadius: "5px", background: "#f3f4f6", color: "#111827", border: "1px solid #e5e7eb" }}>BS</span>
+                ) : (
+                  <span style={{ color: "#e5e7eb" }}>—</span>
+                )}
               </td>
               <td
                 style={{
@@ -664,7 +672,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
           ))}
           <tr>
             <td
-              colSpan={3}
+              colSpan={4}
               style={{
                 ...td,
                 color: "#9ca3af",
@@ -698,6 +706,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
     const [name, setName] = useState(snap.name ?? "");
     const [amt, setAmt] = useState(snap.amount ?? "");
     const [cnum, setCnum] = useState(snap.chime_number ?? "");
+    const [bs, setBs] = useState(!!snap.st_blackscreen);
     const [saving, setSaving] = useState(false);
 
     async function save() {
@@ -707,6 +716,7 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
         name: name.trim(),
         amount: parseFloat(amt) || 0,
         chime_number: cnum.trim() || null,
+        st_blackscreen: bs,
       });
       setSaving(false);
     }
@@ -904,6 +914,10 @@ function SnapshotModal({ record, onEdit, onRecordUpdate, onClose }) {
                 />
               </div>
             </div>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#374151", cursor: "pointer", padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: "7px", background: "#f9fafb" }}>
+              <input type="checkbox" checked={bs} onChange={(e) => setBs(e.target.checked)} style={{ cursor: "pointer", width: "15px", height: "15px" }} />
+              Black Screen
+            </label>
           </div>
         </div>
       </div>,
@@ -1237,6 +1251,12 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
     if (e.key === "Enter") handleAdd();
   }
 
+  function toggleBlackscreen(entry) {
+    onEdit(entry.id, { st_blackscreen: !entry.st_blackscreen });
+  }
+
+  const sideAccent = isChime ? "#10b981" : "#3b82f6";
+
   // Sort entries by chime_number ascending (numeric if possible)
   const sorted = [...entries].sort((a, b) => {
     const an = parseFloat(a.chime_number);
@@ -1357,6 +1377,9 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
               >
                 Name
               </th>
+              <th style={{ fontSize: "10px", color: "#9ca3af", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em", padding: "9px 8px", textAlign: "center", width: "90px" }}>
+                Black Screen
+              </th>
               <th
                 style={{
                   fontSize: "10px",
@@ -1456,6 +1479,20 @@ function EntryTable({ side, entries, onAdd, onHide, onEdit, loading }) {
                     }}
                   >
                     {r.name}
+                  </td>
+                  {/* Black Screen */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!r.st_blackscreen}
+                      onChange={() => toggleBlackscreen(r)}
+                      style={{
+                        cursor: "pointer",
+                        accentColor: sideAccent,
+                        width: "15px",
+                        height: "15px",
+                      }}
+                    />
                   </td>
                   {/* Chime/Cashapp number */}
                   <td
@@ -1738,6 +1775,7 @@ function StatusTable() {
         st_number: num.trim() || null,
         st_using: false,
         st_paying: false,
+        st_blackscreen: false,
         st_done: false,
       })
       .select();
@@ -1752,11 +1790,14 @@ function StatusTable() {
   async function toggle(id, key) {
     const item = items.find((i) => i.id === id);
     if (!item) return;
+    // When Done is on, block toggling others (UI also disables them).
+    if (item.st_done && key !== "st_done") return;
     const newVal = !item[key];
     const changes = { [key]: newVal };
     if (key === "st_done" && newVal) {
       changes.st_using = false;
       changes.st_paying = false;
+      changes.st_blackscreen = false;
     }
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, ...changes } : i)),
@@ -1857,13 +1898,16 @@ function StatusTable() {
                       </div>
                       <button onClick={() => handleDelete(r.id)} style={{ fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer" }}>Delete</button>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
-                      {[["st_using", "Using"], ["st_paying", "Paying"], ["st_done", "Done"]].map(([k, lbl]) => (
-                        <label key={k} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "10px", borderRadius: "7px", border: `1px solid ${r[k] ? sideColor(r.side) : "#e5e7eb"}`, background: r[k] ? (r.side === "chime" ? "#f0fdf4" : "#eff6ff") : "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: r[k] ? sideColor(r.side) : "#6b7280" }}>
-                          <input type="checkbox" checked={r[k]} onChange={() => toggle(r.id, k)} style={{ cursor: "pointer", accentColor: sideColor(r.side), width: "16px", height: "16px", margin: 0 }} />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                      {[["st_using", "Using"], ["st_paying", "Paying"], ["st_blackscreen", "Black Screen"], ["st_done", "Done"]].map(([k, lbl]) => {
+                        const locked = k !== "st_done" && r.st_done;
+                        return (
+                        <label key={k} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "10px", borderRadius: "7px", border: `1px solid ${r[k] ? sideColor(r.side) : "#e5e7eb"}`, background: r[k] ? (r.side === "chime" ? "#f0fdf4" : "#eff6ff") : "#fff", cursor: locked ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600, color: r[k] ? sideColor(r.side) : "#6b7280", opacity: locked ? 0.45 : 1 }}>
+                          <input type="checkbox" checked={!!r[k]} disabled={locked} onChange={() => toggle(r.id, k)} style={{ cursor: locked ? "not-allowed" : "pointer", accentColor: sideColor(r.side), width: "16px", height: "16px", margin: 0 }} />
                           {lbl}
                         </label>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -1887,6 +1931,9 @@ function StatusTable() {
             <th style={{ ...th, textAlign: "center", width: "80px" }}>
               Paying
             </th>
+            <th style={{ ...th, textAlign: "center", width: "100px" }}>
+              Black Screen
+            </th>
             <th style={{ ...th, textAlign: "center", width: "80px" }}>Done</th>
             <th style={{ width: "60px" }} />
           </tr>
@@ -1895,7 +1942,7 @@ function StatusTable() {
           {loading ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 style={{
                   textAlign: "center",
                   fontSize: "12px",
@@ -1909,7 +1956,7 @@ function StatusTable() {
           ) : items.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 style={{
                   textAlign: "center",
                   fontSize: "12px",
@@ -1971,17 +2018,19 @@ function StatusTable() {
                         {r.side}
                       </span>
                     </td>
-                    {["st_using", "st_paying", "st_done"].map((k) => (
+                    {["st_using", "st_paying", "st_blackscreen", "st_done"].map((k) => (
                       <td
                         key={k}
                         style={{ padding: "10px", textAlign: "center" }}
                       >
                         <input
                           type="checkbox"
-                          checked={r[k]}
+                          checked={!!r[k]}
+                          disabled={k !== "st_done" && r.st_done}
                           onChange={() => toggle(r.id, k)}
                           style={{
-                            cursor: "pointer",
+                            cursor: (k !== "st_done" && r.st_done) ? "not-allowed" : "pointer",
+                            opacity: (k !== "st_done" && r.st_done) ? 0.4 : 1,
                             accentColor: sideColor(r.side),
                             width: "15px",
                             height: "15px",
@@ -2303,6 +2352,7 @@ export default function Dashboard() {
         name: e.name,
         amount: Number(e.amount),
         chime_number: e.chime_number || null,
+        st_blackscreen: !!e.st_blackscreen,
       })),
       ...entries.cashapp.map((e, i) => ({
         record_id,
@@ -2311,6 +2361,7 @@ export default function Dashboard() {
         name: e.name,
         amount: Number(e.amount),
         chime_number: e.chime_number || null,
+        st_blackscreen: !!e.st_blackscreen,
       })),
     ];
     if (allEntries.length > 0)
