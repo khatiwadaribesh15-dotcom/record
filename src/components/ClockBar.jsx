@@ -46,6 +46,26 @@ export default function ClockBar() {
       setLoading(false);
     }
     load();
+
+    const channel = supabase
+      .channel("shifts-clockbar")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shifts" }, payload => {
+        if (payload.eventType === "INSERT" && payload.new.clock_out === null) {
+          setActiveShift(payload.new);
+        } else if (payload.eventType === "UPDATE") {
+          setActiveShift(prev => {
+            if (prev?.id === payload.new.id) {
+              return payload.new.clock_out ? null : payload.new;
+            }
+            return prev;
+          });
+        } else if (payload.eventType === "DELETE") {
+          setActiveShift(prev => prev?.id === payload.old.id ? null : prev);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
@@ -62,13 +82,25 @@ export default function ClockBar() {
   async function clockIn() {
     setSaving(true);
     await syncServerOffset();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("shifts")
       .insert({ name: name.trim() || null })
       .select()
       .single();
-    setActiveShift(data);
-    setName("");
+    if (error) {
+      // Likely the unique-active-shift constraint — someone else is clocked in
+      const { data: active } = await supabase
+        .from("shifts")
+        .select("*")
+        .is("clock_out", null)
+        .order("clock_in", { ascending: false })
+        .limit(1);
+      setActiveShift(active?.[0] ?? null);
+      alert("Someone is already clocked in. You can clock in only after they clock out.");
+    } else {
+      setActiveShift(data);
+      setName("");
+    }
     setSaving(false);
   }
 
