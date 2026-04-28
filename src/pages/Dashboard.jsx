@@ -1829,6 +1829,48 @@ function StatusTable() {
         </button>
       </div>
 
+      {isMobile ? (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {loading ? (
+            <p style={{ textAlign: "center", fontSize: "13px", color: "#9ca3af", padding: "24px" }}>Loading…</p>
+          ) : items.length === 0 ? (
+            <p style={{ textAlign: "center", fontSize: "13px", color: "#9ca3af", padding: "24px" }}>No records yet</p>
+          ) : (
+            [...items]
+              .sort((a, b) => {
+                const an = parseFloat(a.st_number);
+                const bn = parseFloat(b.st_number);
+                if (!isNaN(an) && !isNaN(bn)) return an - bn;
+                return (a.st_number || "").localeCompare(b.st_number || "");
+              })
+              .map((r) => {
+                const pill = sidePill(r.side);
+                return (
+                  <div key={r.id} style={{ padding: "14px 16px", borderBottom: "1px solid #f3f4f6" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px", gap: "8px" }}>
+                      <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                        <div style={{ color: "#1f2937", fontWeight: 600, fontSize: "15px", marginBottom: "4px" }}>{r.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "6px", background: pill.bg, color: pill.color, border: `1px solid ${pill.border}`, textTransform: "capitalize" }}>{r.side}</span>
+                          {r.st_number && <span style={{ fontFamily: "monospace", fontSize: "12px", color: "#6b7280" }}>{r.st_number}</span>}
+                        </div>
+                      </div>
+                      <button onClick={() => handleDelete(r.id)} style={{ fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer" }}>Delete</button>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                      {[["st_using", "Using"], ["st_paying", "Paying"], ["st_done", "Done"]].map(([k, lbl]) => (
+                        <label key={k} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "10px", borderRadius: "7px", border: `1px solid ${r[k] ? sideColor(r.side) : "#e5e7eb"}`, background: r[k] ? (r.side === "chime" ? "#f0fdf4" : "#eff6ff") : "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: r[k] ? sideColor(r.side) : "#6b7280" }}>
+                          <input type="checkbox" checked={r[k]} onChange={() => toggle(r.id, k)} style={{ cursor: "pointer", accentColor: sideColor(r.side), width: "16px", height: "16px", margin: 0 }} />
+                          {lbl}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+          )}
+        </div>
+      ) : (
       <table
         style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}
       >
@@ -1970,6 +2012,7 @@ function StatusTable() {
           )}
         </tbody>
       </table>
+      )}
 
       {showForm && (
         <div
@@ -2131,6 +2174,7 @@ export default function Dashboard() {
   const [showFilter, setShowFilter] = useState(false);
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
+  const isMobile = useIsMobile();
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   const fetchEntries = useCallback(async () => {
@@ -2474,8 +2518,8 @@ export default function Dashboard() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
-              gap: "12px",
+              gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr 1fr 1fr auto",
+              gap: isMobile ? "10px" : "12px",
               marginBottom: "12px",
               alignItems: "end",
             }}
@@ -2486,7 +2530,7 @@ export default function Dashboard() {
                 type="date"
                 value={recDate}
                 onChange={(e) => setRecDate(e.target.value)}
-                style={iInput}
+                style={{ ...iInput, fontSize: isMobile ? "15px" : "13px", padding: isMobile ? "11px 13px" : "8px 10px" }}
               />
             </div>
             <div>
@@ -2498,6 +2542,8 @@ export default function Dashboard() {
                   ...iInput,
                   color: "#9ca3af",
                   backgroundColor: "#f3f4f6",
+                  fontSize: isMobile ? "15px" : "13px",
+                  padding: isMobile ? "11px 13px" : "8px 10px",
                 }}
               />
             </div>
@@ -2509,7 +2555,7 @@ export default function Dashboard() {
                 placeholder="0.00"
                 value={recChime}
                 onChange={(e) => setRecChime(e.target.value)}
-                style={{ ...iInput, color: "#065f46" }}
+                style={{ ...iInput, color: "#065f46", fontSize: isMobile ? "15px" : "13px", padding: isMobile ? "11px 13px" : "8px 10px" }}
               />
             </div>
             <div>
@@ -2520,29 +2566,30 @@ export default function Dashboard() {
                 placeholder="0.00"
                 value={recCashapp}
                 onChange={(e) => setRecCashapp(e.target.value)}
-                style={{ ...iInput, color: "#1e3a8a" }}
+                style={{ ...iInput, color: "#1e3a8a", fontSize: isMobile ? "15px" : "13px", padding: isMobile ? "11px 13px" : "8px 10px" }}
               />
             </div>
-            <div style={{ paddingTop: "18px" }}>
+            <div style={{ paddingTop: isMobile ? "0" : "18px", gridColumn: isMobile ? "span 2" : "auto" }}>
               <button
                 onClick={fillLiveTotals}
                 style={{
-                  fontSize: "11px",
+                  fontSize: isMobile ? "13px" : "11px",
                   color: "#059669",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   border: "1px solid #6ee7b7",
                   borderRadius: "8px",
-                  padding: "9px 12px",
+                  padding: isMobile ? "11px 12px" : "9px 12px",
                   background: "#f0fdf4",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
+                  width: isMobile ? "100%" : "auto",
                 }}
               >
                 Use live totals
               </button>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "10px" : "12px", alignItems: isMobile ? "stretch" : "flex-end" }}>
             <div style={{ flex: 1 }}>
               <label style={iLabel}>Note (optional)</label>
               <input
@@ -2551,16 +2598,16 @@ export default function Dashboard() {
                 value={recNote}
                 onChange={(e) => setRecNote(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSaveRecord()}
-                style={iInput}
+                style={{ ...iInput, fontSize: isMobile ? "15px" : "13px", padding: isMobile ? "11px 13px" : "8px 10px" }}
               />
             </div>
             <button
               onClick={handleSaveRecord}
               disabled={savingRec || !recDate}
               style={{
-                fontSize: "13px",
+                fontSize: isMobile ? "14px" : "13px",
                 fontWeight: 600,
-                padding: "9px 24px",
+                padding: isMobile ? "12px 24px" : "9px 24px",
                 borderRadius: "8px",
                 border: "none",
                 cursor: "pointer",
@@ -2568,6 +2615,7 @@ export default function Dashboard() {
                 color: "#fff",
                 whiteSpace: "nowrap",
                 opacity: !recDate ? 0.4 : 1,
+                width: isMobile ? "100%" : "auto",
               }}
             >
               {savingRec ? "Saving…" : "Save record"}
@@ -2812,6 +2860,39 @@ export default function Dashboard() {
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
+            {isMobile ? (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {filteredRecords.map((r) => {
+                  const rowTot = Number(r.chime_total) + Number(r.cashapp_total);
+                  return (
+                    <div key={r.id} style={{ padding: "14px 16px", borderBottom: "1px solid #f0fdf4" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", gap: "8px" }}>
+                        <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                          <div style={{ fontFamily: "monospace", fontSize: "13px", fontWeight: 600, color: "#111827" }}>{r.date}</div>
+                          <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>{r.day_name}{r.note ? ` · ${r.note}` : ""}</div>
+                        </div>
+                        <div style={{ fontFamily: "monospace", fontSize: "15px", fontWeight: 700, color: "#111827", whiteSpace: "nowrap" }}>{fmt(rowTot)}</div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "10px" }}>
+                        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "6px 10px" }}>
+                          <div style={{ fontSize: "10px", color: "#065f46", textTransform: "uppercase", letterSpacing: "0.05em" }}>Chime</div>
+                          <div style={{ fontFamily: "monospace", fontSize: "13px", fontWeight: 600, color: "#065f46" }}>{fmt(r.chime_total)}</div>
+                        </div>
+                        <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px" }}>
+                          <div style={{ fontSize: "10px", color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cashapp</div>
+                          <div style={{ fontFamily: "monospace", fontSize: "13px", fontWeight: 600, color: "#1e3a8a" }}>{fmt(r.cashapp_total)}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button onClick={() => setShowRecord(r)} style={{ flex: 1, fontSize: "12px", fontWeight: 600, padding: "8px", borderRadius: "7px", border: "1px solid #6ee7b7", background: "#f0fdf4", color: "#059669", cursor: "pointer" }}>Show</button>
+                        <button onClick={() => setEditRecord(r)} style={{ flex: 1, fontSize: "12px", fontWeight: 600, padding: "8px", borderRadius: "7px", border: "1px solid #e5e7eb", background: "#fff", color: "#374151", cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => handleHideRecord(r.id)} style={{ fontSize: "12px", fontWeight: 600, padding: "8px 14px", borderRadius: "7px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer" }}>Delete</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
             <table
               style={{
                 width: "100%",
@@ -3033,6 +3114,7 @@ export default function Dashboard() {
                 })}
               </tbody>
             </table>
+            )}
           </div>
         )}
       </div>
